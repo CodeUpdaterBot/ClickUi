@@ -3,9 +3,9 @@ The best AI model tool built for every platform in pure Python.
 
 ![prompot](https://github.com/user-attachments/assets/b1feb373-ae54-4274-9fd0-2c1b2e30926d)
  
-# ControlUi Documentation
+# clickui Documentation
 
-ControlUi is a powerful, cross-platform open-source application that integrates various AI models, speech recognition, and web scraping capabilities. It provides a seamless interface for voice and text interactions, file attachments, property lookups, and web searches.
+ClickUi is a powerful, cross-platform open-source application that integrates various AI models, speech recognition, and web scraping capabilities. It provides a seamless interface for voice and text interactions, file attachments, property lookups, and web searches.
 
 ---
 
@@ -102,7 +102,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
    Test your installation by running:
 
    ```bash
-   python controlui.py
+   python clickui.py
    ```
 
    If you encounter import errors, install the missing libraries via pip. For example:
@@ -114,17 +114,17 @@ The AI Assistant relies on two critical dependencies that must be installed and 
    ```
 
 8. **Start the Program**  
-   - With your command prompt active in the correct conda environment and in the directory containing `controlui.py`, run:
+   - With your command prompt active in the correct conda environment and in the directory containing `clickui.py`, run:
 
    ```bash
-   python controlui.py
+   python clickui.py
    ```
 
-   - Once you see the message `Ready!...`, press `Ctrl+k` to bring up the ControlUi interface.
+   - Once you see the message `Ready!...`, press `Ctrl+k` to bring up the clickui interface.
 
 ### Configuration
 
-Configure ControlUi by editing the `.voiceconfig` file in the root directory. Key settings include:
+Configure clickui by editing the `.voiceconfig` file in the root directory. Key settings include:
 
 ```json
 {
