@@ -1,0 +1,22 @@
+{
+    "use_sonos": false,
+    "use_conversation_history": false,
+    "BROWSER_TYPE": "chrome",
+    "CHROME_USER_DATA": "C:\\Users\\PC\\AppData\\Local\\Google\\Chrome\\User Data",
+    "CHROME_DRIVER_PATH": "C:\\Users\\PC\\Downloads\\chromedriver.exe",
+    "CHROME_PROFILE": "Profile 10",
+    "CHROMIUM_USER_DATA": "C:\\Users\\PC\\AppData\\Local\\Chromium\\User Data",
+    "CHROMIUM_DRIVER_PATH": "C:\\Users\\PC\\Downloads\\chromiumdriver.exe",
+    "CHROMIUM_PROFILE": "Profile 1",
+    "CHROMIUM_BINARY": "C:\\Users\\PC\\AppData\\Local\\Chromium\\Application\\chrome.exe",
+    "ENGINE": "Groq",
+    "MODEL_ENGINE": "llama-3.3-70b-versatile",
+    "OPENAI_API_KEY": "",
+    "GOOGLE_API_KEY": "",
+    "OPENROUTER_API_KEY": "",
+    "CLAUDE_API_KEY": "",
+    "GROQ_API_KEY": "",
+    "days_back_to_load": 3,
+    "SONOS_IP": "192.168.1.27",
+    "HOTKEY_LAUNCH": "ctrl+k"
+}
