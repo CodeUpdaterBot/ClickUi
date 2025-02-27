@@ -9,10 +9,6 @@ ControlUi is a powerful, cross-platform open-source application that integrates 
 
 ---
 
-## Preliminary Information
-
-Before diving into the setup and usage of the AI Assistant, it's important to understand its core components and dependencies.
-
 ### Modes of Operation
 
 The AI Assistant operates in two primary modes:
