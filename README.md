@@ -20,6 +20,7 @@ Looking for Collaborators!
 ### Modes of Operation
 
 The AI Assistant operates in two primary modes:
+---
 
 - **Voice Mode:** Allows users to interact with the AI using voice commands and receive spoken responses.
 - ![voice_mode](https://github.com/user-attachments/assets/975c762a-c3ef-4ba7-949a-4fe9feacce64)
@@ -29,6 +30,7 @@ The AI Assistant operates in two primary modes:
 - ![prompt2](https://github.com/user-attachments/assets/c337c9f4-6ded-4250-ae98-9e22c148cd8d)
 - ![prompt3](https://github.com/user-attachments/assets/76fe3a4d-4023-4e1a-af73-75be9dba357a)
 
+---
 ### Key Dependencies
 ---
 
