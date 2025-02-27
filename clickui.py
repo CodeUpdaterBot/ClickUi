@@ -69,6 +69,8 @@ OPENROUTER_API_KEY = ""
 CLAUDE_API_KEY = ""
 GROQ_API_KEY = ""
 
+HOTKEY_LAUNCH = "ctrl+k"
+
 ENGINE_MODELS = {
     "Ollama": ["llama3-groq-tool-use:8b-q5_K_M", "qwen2.5:7b-instruct-q5_K_M"],
     "OpenAI": ["gpt-4o-mini", "o3-mini", "gpt-4o", "o1-mini", "o1-preview", "o1"],
@@ -148,17 +150,9 @@ phonemizer_logger = logging.getLogger("phonemizer")
 phonemizer_logger.setLevel(logging.ERROR)
 phonemizer_logger.handlers.clear()
 phonemizer_logger.propagate = False
+
 kokoro_pipeline = None
-
-MODEL = "o3-mini"  #.voiceconfig overrides
-OPENROUTER_API_KEY = ""
-CLAUDE_API_KEY = ""
-GROQ_API_KEY = ""
-BROWSER_TO_USE = "Chrome"
-
-HOTKEY_LAUNCH = "ctrl+k"
 launch_hotkey_id = None
-
 last_main_geometry = None
 last_chat_geometry = None
 
@@ -185,14 +179,12 @@ def load_config():
             config = json.load(f)
         global use_sonos, use_conversation_history, BROWSER_TYPE, CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY
-        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP
-        global BROWSER_TO_USE, HOTKEY_LAUNCH
+        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP, HOTKEY_LAUNCH
         global OPENROUTER_API_KEY, CLAUDE_API_KEY, GROQ_API_KEY
 
         use_sonos = config.get("use_sonos", use_sonos)
         use_conversation_history = config.get("use_conversation_history", use_conversation_history)
         BROWSER_TYPE = config.get("BROWSER_TYPE", BROWSER_TYPE)
-        BROWSER_TO_USE = BROWSER_TYPE  # Mirror
         CHROME_USER_DATA = config.get("CHROME_USER_DATA", CHROME_USER_DATA)
         CHROME_DRIVER_PATH = config.get("CHROME_DRIVER_PATH", CHROME_DRIVER_PATH)
         CHROME_PROFILE = config.get("CHROME_PROFILE", CHROME_PROFILE)
