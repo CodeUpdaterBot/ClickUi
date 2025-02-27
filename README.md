@@ -3,7 +3,7 @@ The best AI model tool built for every platform in pure Python.
 
 ![prompot](https://github.com/user-attachments/assets/b1feb373-ae54-4274-9fd0-2c1b2e30926d)
  
-# ClickUi Documentation
+# Documentation
 
 ClickUi is a powerful, cross-platform open-source application that integrates various AI models, speech recognition, and web scraping capabilities. It provides a seamless interface for voice and text interactions, file attachments, property lookups, and web searches.
 
