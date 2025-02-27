@@ -72,7 +72,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
    conda install -c conda-forge cudatoolkit
    ```
 
-3.1. **Install cuDNN**  
+3. **Install cuDNN**  
    Not required for chat-based functionality.  
    Install cudnn v8.9.7 from:  
    [https://anaconda.org/conda-forge/cudnn](https://anaconda.org/conda-forge/cudnn)
@@ -81,7 +81,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
    conda install -c conda-forge cudnn
    ```
 
-3.2. **Install Pytorch**  
+3. **Install Pytorch**  
    Not required for chat-based functionality.  
    Install Pytorch from:  
    [https://pytorch.org/](https://pytorch.org/)
@@ -90,7 +90,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
    conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
    ```
 
-3.3. **Install Tensorflow**  
+3. **Install Tensorflow**  
    Not required for chat-based functionality.  
    Install Tensorflow 2.14.0 (the last version compatible with CUDA 11.8) as referenced here:  
    [https://www.tensorflow.org/install/source#gpu](https://www.tensorflow.org/install/source#gpu)
