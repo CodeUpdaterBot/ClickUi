@@ -150,7 +150,7 @@ phonemizer_logger.handlers.clear()
 phonemizer_logger.propagate = False
 kokoro_pipeline = None
 
-MODEL = "o3-mini"  # We'll unify with MODEL_ENGINE from the original code, but keep it for the UI label
+MODEL = "o3-mini"  #.voiceconfig overrides
 OPENROUTER_API_KEY = ""
 CLAUDE_API_KEY = ""
 GROQ_API_KEY = ""
