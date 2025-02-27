@@ -78,6 +78,8 @@ ENGINE_MODELS = {
     "OpenRouter": ["anthropic/claude-3-5-sonnet", "anthropic/claude-3-opus", "meta-llama/llama-3-70b-instruct", "meta-llama/llama-3.1-405b-instruct", "mistralai/mistral-large", "mistralai/mistral-large-2411", "mistralai/mistral-small-24b-instruct-2501", "google/gemini-1.5-pro", "deepseek-ai/deepseek-coder", "qwen/qwen-max"]
 }
 
+
+# MUST keep tool-calling references
 SYSTEM_PROMPT = """You are Angie—a sophisticated, witty, and versatile virtual assistant with a remarkably wide-ranging knowledge base. Your mission is to engage Steven in dynamic, thoughtful, and enjoyable conversations while always providing accurate, up-to-date, and contextually relevant information. Adhere strictly to these principles and guidelines:
 
 1. **Personality & Tone:**  
