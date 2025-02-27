@@ -9,6 +9,7 @@ import soco
 
 ##
 ##  Plays a .wav audio file to any sonos speaker with the IP address alone (must be on same local network as SONOS)
+##  The main program uses only send_to_sonos to send the Kokoro TTS audio to SONOS
 ##
 
 # Change these parameters as needed
