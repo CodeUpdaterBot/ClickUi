@@ -30,6 +30,7 @@ The AI Assistant operates in two primary modes:
 - ![prompt3](https://github.com/user-attachments/assets/76fe3a4d-4023-4e1a-af73-75be9dba357a)
 
 ### Key Dependencies
+---
 
 The AI Assistant relies on two critical dependencies that must be installed and loaded into the global scope before the program can run:
 
@@ -45,6 +46,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 ---
 
 ## Setup
+---
 
 ### Installation
 
