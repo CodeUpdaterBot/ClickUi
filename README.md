@@ -11,6 +11,8 @@ It's 100% Python, and aims to be the best AI-computer assistant. Help us build i
 
 Looking for Collaborators!
 
+---
+
 1-min Demo: https://youtu.be/oH-A1hSdVKQ?si=nACWl7AiKbpoeUJn&t=1
 
 ---
