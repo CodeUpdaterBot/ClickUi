@@ -8,7 +8,6 @@ The best AI model tool built for every platform in pure Python.
 ControlUi is a powerful, cross-platform open-source application that integrates various AI models, speech recognition, and web scraping capabilities. It provides a seamless interface for voice and text interactions, file attachments, property lookups, and web searches.
 
 ---
-![promtp4](https://github.com/user-attachments/assets/e52c1c85-e483-405b-8a9a-d7b3fe9e3aca)
 
 ## Preliminary Information
 
@@ -32,6 +31,8 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
 - **Whisper:** An automatic speech recognition (ASR) system used for transcribing voice input.
 - **Kokoro:** A text-to-speech engine used for generating spoken responses in Voice Mode.
+- **API Keys:** You need to configure the API keys and Engine/Model information to be able to use that AI model.
+- ![promtp4](https://github.com/user-attachments/assets/e52c1c85-e483-405b-8a9a-d7b3fe9e3aca)
 
 > **Warning:**  
 > The Whisper and Kokoro models are loaded into the global scope. They must be installed and properly configured before running the AI Assistant. Failure to do so will result in runtime errors.
