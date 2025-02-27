@@ -32,6 +32,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
 > **Warning:**  
 > The Whisper and Kokoro models are loaded into the global scope. They must be installed and properly configured before running the AI Assistant. Failure to do so will result in runtime errors.
+> You can run without Voice functionality & dependencies by commenting the Whisper & Kokoro loading out (but the voice mode will not work)
 
 ---
 
