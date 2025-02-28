@@ -90,13 +90,16 @@ python clickui.py
 ---
 
 ### Installation (if you don't have python installed or are new to this)
+0. **Keep the files together in one folder**
+   You need the sonos.py, the .svg's, etc for the default program to run.
+   These are all provided in the GitHub folder, make sure your folder has the same contents as this Repo
 
-1. **Install Anaconda/Conda**  
+2. **Install Anaconda/Conda**  
    Download and install Anaconda/Conda from:  
    [https://www.anaconda.com/download/success](https://www.anaconda.com/download/success)  
    This allows for easier environment management and Python setup. Install system-wide and add to the PATH.
 
-2. **Create new Conda environment**  
+3. **Create new Conda environment**  
    - Run `conda -h` in your terminal to check if conda is installed correctly.
    - Open Command Prompt and create a new Conda environment called `cuda` with Python version 3.11:
 
@@ -114,7 +117,7 @@ python clickui.py
 
    Your terminal prompt should now display the environment name.
 
-3. **Install CUDA Toolkit and Related Libraries**  
+4. **Install CUDA Toolkit and Related Libraries**  
    ⚠️ **Enables GPU-enabled voice transcription & generation**. Is not required, you can use the CPU.
    ⚠️ **Only for NVIDIA GPUs**
 
