@@ -110,41 +110,43 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
    Your terminal prompt should now display the environment name.
 
-3. **Install CUDA Toolkit (for Kokoro & Whisper)**  
-   These are not required for chat-based functionality but are essential for Voice-mode responsiveness. Without a NVIDIA GPU, voice transcription and generation will be slower.  
-   Install cudatoolkit v11.8.0 from:  
-   [https://anaconda.org/conda-forge/cudatoolkit](https://anaconda.org/conda-forge/cudatoolkit)
+3. **Install CUDA Toolkit and Related Libraries**
 
-   ```bash
-   conda install -c conda-forge cudatoolkit
-   ```
+   - **A. Install CUDA Toolkit (for Kokoro & Whisper)**  
+     These are not required for chat-based functionality but are essential for Voice-mode responsiveness. Without a NVIDIA GPU, voice transcription and generation will be slower.  
+     Install cudatoolkit v11.8.0 from:  
+     [https://anaconda.org/conda-forge/cudatoolkit](https://anaconda.org/conda-forge/cudatoolkit)
 
-3. **Install cuDNN**  
-   Not required for chat-based functionality.  
-   Install cudnn v8.9.7 from:  
-   [https://anaconda.org/conda-forge/cudnn](https://anaconda.org/conda-forge/cudnn)
+     ```bash
+     conda install -c conda-forge cudatoolkit
+     ```
 
-   ```bash
-   conda install -c conda-forge cudnn
-   ```
+   - **B. Install cuDNN**  
+     Not required for chat-based functionality.  
+     Install cudnn v8.9.7 from:  
+     [https://anaconda.org/conda-forge/cudnn](https://anaconda.org/conda-forge/cudnn)
 
-3. **Install Pytorch**  
-   Not required for chat-based functionality.  
-   Install Pytorch from:  
-   [https://pytorch.org/](https://pytorch.org/)
+     ```bash
+     conda install -c conda-forge cudnn
+     ```
 
-   ```bash
-   conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-   ```
+   - **C. Install Pytorch**  
+     Not required for chat-based functionality.  
+     Install Pytorch from:  
+     [https://pytorch.org/](https://pytorch.org/)
 
-3. **Install Tensorflow**  
-   Not required for chat-based functionality.  
-   Install Tensorflow 2.14.0 (the last version compatible with CUDA 11.8) as referenced here:  
-   [https://www.tensorflow.org/install/source#gpu](https://www.tensorflow.org/install/source#gpu)
+     ```bash
+     conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+     ```
 
-   ```bash
-   conda install -c conda-forge tensorflow=2.14.0=cuda118py311heb1bdc4_0
-   ```
+   - **D. Install Tensorflow**  
+     Not required for chat-based functionality.  
+     Install Tensorflow 2.14.0 (the last version compatible with CUDA 11.8) as referenced here:  
+     [https://www.tensorflow.org/install/source#gpu](https://www.tensorflow.org/install/source#gpu)
+
+     ```bash
+     conda install -c conda-forge tensorflow=2.14.0=cuda118py311heb1bdc4_0
+     ```
 
 4. **Other Libraries**  
    Test your installation by running:
