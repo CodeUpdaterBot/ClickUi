@@ -118,7 +118,7 @@ python clickui.py
    Your terminal prompt should now display the environment name.
 
 4. **Install CUDA Toolkit and Related Libraries**  
-   ⚠️ **Enables GPU-enabled voice transcription & generation**. Is not required, you can use the CPU.
+   ⚠️ **Enables GPU voice transcription & generation**. Is not required, you can use the CPU, but it will be noticeably slower and less enjoyable to use.
    ⚠️ **Only for NVIDIA GPUs**
 
    - **A. Install CUDA Toolkit (for Kokoro & Whisper)**  
