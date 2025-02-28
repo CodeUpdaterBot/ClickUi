@@ -600,7 +600,7 @@ def weather_lookup(city: str) -> str:
     data = response.json()
     if response.status_code == 200:
         temp
-
+```
 
 ## Troubleshooting / Tips
 
