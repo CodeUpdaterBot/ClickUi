@@ -601,3 +601,10 @@ def weather_lookup(city: str) -> str:
     if response.status_code == 200:
         temp
 
+
+## Troubleshooting / Tips
+
+### Custom AI Model Integration
+
+To integrate a custom AI model, add a new API call function and update the `ENGINE_MODELS` dictionary. For example:
+
