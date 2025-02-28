@@ -11,8 +11,8 @@ It's 100% Python, and aims to be the best AI-computer assistant. Help us build i
 
 # Collaboration
 Looking for Collaborators! Leave Voice mode running, have conversations throughout the day, and experience how AI should be on the computer.
- Submit new features & ideas in the README as checkboxes so they can be added to the page
- **Submit pull requests to main** and they will be reviewed.
+-Submit new features & ideas in the README as checkboxes so they can be added to the page
+-**Submit pull requests to main** and they will be reviewed.
 
 
 ---
