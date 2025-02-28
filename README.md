@@ -9,7 +9,7 @@ ClickUi is a powerful, cross-platform open-source application that integrates va
 
 It's 100% Python, and aims to be the best AI-computer assistant. Help us build it to either get there or keep it that way! **Submit pull requests to main** and they will be reviewed.
 
-Looking for Collaborators!
+Looking for Collaborators! Leave Voice mode running, have conversations throughout the day, and experience how AI should be on the computer.
 
 ---
 
@@ -552,3 +552,4 @@ def weather_lookup(city: str) -> str:
     data = response.json()
     if response.status_code == 200:
         temp
+
