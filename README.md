@@ -604,7 +604,9 @@ def weather_lookup(city: str) -> str:
 
 ## Troubleshooting / Tips
 
-### Custom AI Model Integration
+### Browser/Web-Search related issues
 
-To integrate a custom AI model, add a new API call function and update the `ENGINE_MODELS` dictionary. For example:
+If your ChromeDriver is proper for the version of Chrome you are using in the paths, and you have the paths setup properly, and the code is actually getting triggered to run the web-search but it's returning errors, double check the UserAgent in the code and that no instance of Chrome or Chromium is running in the Task Manager (end all before running to verify). Also, use the profile you are setting to pull up the site manually via the browser, see if it let's you access the URL. Try using your main Chrome profile info for the best results.
+
+
 
