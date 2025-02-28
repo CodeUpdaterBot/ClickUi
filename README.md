@@ -114,7 +114,8 @@ python main.py
    Your terminal prompt should now display the environment name.
 
 3. **Install CUDA Toolkit and Related Libraries**  
-   ⚠️ **Only if you want GPU-enabled voice transcription & generation, for NVIDIA GPUs**
+   ⚠️ **Enables GPU-enabled voice transcription & generation**. Is not required, you can use the CPU.
+   ⚠️ **Only for NVIDIA GPUs**
 
    - **A. Install CUDA Toolkit (for Kokoro & Whisper)**  
      These are not required for chat-based functionality but are essential for Voice-mode responsiveness. Without a NVIDIA GPU, voice transcription and generation will be slower.  
