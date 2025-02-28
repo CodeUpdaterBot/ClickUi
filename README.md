@@ -84,7 +84,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
 ## Setup/Run
 ```python
-python main.py
+python clickui.py
 ```
 ---
 
