@@ -83,6 +83,9 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 ---
 
 ## Setup
+```python
+python main.py
+```
 ---
 
 ### Installation
