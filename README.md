@@ -44,7 +44,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 > You can run without Voice functionality & dependencies by commenting the Whisper & Kokoro loading out (but the voice mode will not work)
 
 ---
-## Future Features
+## Future Features & Issues
 
 - [ ] Add WebUI Browser-Use functionality: https://github.com/browser-use/web-ui (might need to create a mini version, WebUI is too slow for real-time usage)
 - [ ] Add a Model/Engine to settings via the SettingsWidget (perhaps 'Add New' in bottom of dropdown)
