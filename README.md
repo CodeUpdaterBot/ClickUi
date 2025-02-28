@@ -1,7 +1,5 @@
 # ClickUi - www.ClickUi.app
-The best AI model tool built for every platform in pure Python. The starting ground for the (hopefully) the most widely used computer-based AI-assistant, something most people will have installed. 
-
-  That's the goal! Looking forward to building with you.
+The best AI model tool built for every platform in pure Python. The starting ground for the most widely used computer-based AI-assistant, something most people will have installed.
 
 ![prompot](https://github.com/user-attachments/assets/b1feb373-ae54-4274-9fd0-2c1b2e30926d)
  
