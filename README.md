@@ -17,8 +17,6 @@ Looking for Collaborators!
 
 ---
 
-### Modes of Operation
-
 The AI Assistant operates in two primary modes:
 ---
 
