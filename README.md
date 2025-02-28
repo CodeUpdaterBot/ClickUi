@@ -11,12 +11,12 @@ The best AI-assistant tool, built for every platform in pure Python. <br>The sta
 ![badge](https://img.shields.io/badge/Webscraping-Playwright-pink)
 ![badge](https://img.shields.io/badge/Webscraping-Selenium-forestgreen)
 ![badge](https://img.shields.io/badge/Search%20Google-orange)
-![badge](https://img.shields.io/badge/Ollama-Models-orchid)
-![badge](https://img.shields.io/badge/OpenAI-GPT-coral)
-![badge](https://img.shields.io/badge/Google-Gemini-lightseagreen)
-![badge](https://img.shields.io/badge/Claude-Integration-darkorchid)
-![badge](https://img.shields.io/badge/Groq-Models-darkgreen)
-![badge](https://img.shields.io/badge/OpenRouter-Models-sienna)
+![badge](https://img.shields.io/badge/Models-Ollama-orchid)
+![badge](https://img.shields.io/badge/Models-OpenAI-coral)
+![badge](https://img.shields.io/badge/Models-Google-lightseagreen)
+![badge](https://img.shields.io/badge/Models-Claude-darkorchid)
+![badge](https://img.shields.io/badge/Models-Groq-darkgreen)
+![badge](https://img.shields.io/badge/Models-OpenRouter-sienna)
 
 </div>
 
