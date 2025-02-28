@@ -5,8 +5,8 @@ The best AI-assistant tool, built for every platform in pure Python. <br>The sta
 ![prompot](https://github.com/user-attachments/assets/b1feb373-ae54-4274-9fd0-2c1b2e30926d)<br>
 
 ![badge](https://img.shields.io/badge/100%25-Python-blue) 
-![badge](https://img.shields.io/badge/TTS-Kokoro-purple)
 ![badge](https://img.shields.io/badge/STT-Whisper-red)
+![badge](https://img.shields.io/badge/TTS-Kokoro-purple)
 ![badge](https://img.shields.io/badge/GUI-PySide6-cyan)
 ![badge](https://img.shields.io/badge/Webscraping-Playwright-pink)
 ![badge](https://img.shields.io/badge/Webscraping-Selenium-forestgreen)
