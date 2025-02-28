@@ -9,7 +9,7 @@ The best AI-assistant tool, built for every platform in pure Python. <br>The sta
 ![badge](https://img.shields.io/badge/STT-Whisper-red)
 ![badge](https://img.shields.io/badge/GUI-PySide6-cyan)
 ![badge](https://img.shields.io/badge/Webscraping-Playwright-pink)
-![badge](https://img.shields.io/badge/Webscraping-Playwright-green)
+![badge](https://img.shields.io/badge/Webscraping-Selenium-forestgreen)
 ![badge](https://img.shields.io/badge/Search%20Google-orange)
 ![badge](https://img.shields.io/badge/Ollama-Models-orchid)
 ![badge](https://img.shields.io/badge/OpenAI-GPT-coral)
