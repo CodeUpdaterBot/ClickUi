@@ -82,13 +82,13 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
 ---
 
-## Setup
-To run: ```python
+## Setup/Run
+```python
 python main.py
 ```
 ---
 
-### Installation
+### Installation (if you don't have python installed or are new to this)
 
 1. **Install Anaconda/Conda**  
    Download and install Anaconda/Conda from:  
@@ -114,6 +114,7 @@ python main.py
    Your terminal prompt should now display the environment name.
 
 3. **Install CUDA Toolkit and Related Libraries**
+   <span style="color: red;">Only if you want GPU-enabled voice transcription & generation, for NVIDIA GPUs</span>
 
    - **A. Install CUDA Toolkit (for Kokoro & Whisper)**  
      These are not required for chat-based functionality but are essential for Voice-mode responsiveness. Without a NVIDIA GPU, voice transcription and generation will be slower.  
@@ -151,7 +152,7 @@ python main.py
      conda install -c conda-forge tensorflow=2.14.0=cuda118py311heb1bdc4_0
      ```
 
-4. **Other Libraries**  
+5. **Other Libraries**  
    Test your installation by running:
 
    ```bash
@@ -166,7 +167,7 @@ python main.py
    pip install keyboard
    ```
 
-5. **Start the Program**  
+6. **Start the Program**  
    - With your command prompt active in the correct conda environment and in the directory containing `clickui.py`, run:
 
    ```bash
