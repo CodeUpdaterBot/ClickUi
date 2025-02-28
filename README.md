@@ -44,6 +44,22 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 > You can run without Voice functionality & dependencies by commenting the Whisper & Kokoro loading out (but the voice mode will not work)
 
 ---
+## Future Features
+---
+
+- [ ] Add WebUI Browser-Use functionality: https://github.com/browser-use/web-ui (might need to create a mini version, WebUI is too slow for real-time usage)
+- [ ] Add a Model/Engine to settings via the SettingsWidget (maybe Add New in bottom of dropdown?)
+- [ ] Add voice name selection (and model size) for kokoro in SettingsWidget
+- [ ] Fix/Revise Conversation History storage so that every message is stored as it comes in or goes out. Right now hotkey activates it sometimes, other logic decides when, not very clean.
+- [ ] Add a model pricing table to calculate total price of input & output per message/websearch/file upload, etc. Could add option to display below message bubbles, etc.
+- [ ] Track token usage per message. Could add option to display below message bubbles, etc.
+- [ ] Update Conversation History model name preservation. When loading a previous chat, the model name above the chats is replaced with the currently selected model once a chat initiates.
+- [ ] Add fine-tuning settings to allow Temp, Top P, Repeat Penalty, etc. to be defined in Settings Widget (something clean/intuitive, maybe a gray horizontal bar like the one to expand the chat window, but above the UI, that lets you adjust these things quickly?)
+- [ ] Merge to one main Window (right now 2 windows launch in taskbar, one for each area)
+- [ ] Option to pop open another chat window with a magnet clip link between them, when selected it links the two input prompts so you can chat with two models at once easily. When not selected you can type different prompts into each. Perhaps a transparent + icon in the upper left of the initial chat bubble that lets you spawn in the other chat bubble?
+- [ ] Computer interactions that you'd actually want to use
+
+---
 
 ## Setup
 ---
