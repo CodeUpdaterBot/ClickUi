@@ -68,6 +68,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
 ---
 ## Future Features 🚀 & Issues ⁉️
+- [ ] Add Code Formatting to AI replies, with small a copy icon
 - [ ] Add a Model/Engine functionality to settings via the SettingsWidget (perhaps 'Add New' in bottom of dropdown). Have to define in python right now to make available.
 - [ ] Add voice name selection (and model size) for kokoro in SettingsWidget
 - [ ] Fix/Revise Conversation History storage so that every message is stored as it comes in or goes out. Right now hotkey activates it sometimes, other logic decides when, not very clean.
