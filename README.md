@@ -7,9 +7,15 @@ The best AI-assistant tool, built for every platform in pure Python. The startin
 
 ClickUi is a powerful, cross-platform open-source application that integrates various AI models, speech recognition, and web scraping capabilities. It provides a seamless interface for voice and text interactions, file attachments, property lookups, and web searches.
 
-It's 100% Python, and aims to be the best AI-computer assistant. Help us build it to either get there or keep it that way! **Submit pull requests to main** and they will be reviewed.
+It's 100% Python, and aims to be the best AI-computer assistant. Help us build it to either get there or keep it that way!
 
+---
+# Collaboration
+---
 Looking for Collaborators! Leave Voice mode running, have conversations throughout the day, and experience how AI should be on the computer.
+Submit new features & ideas in the README as checkboxes so they can be added to the page
+**Submit pull requests to main** and they will be reviewed.
+
 
 ---
 
