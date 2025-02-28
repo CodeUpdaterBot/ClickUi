@@ -9,7 +9,7 @@ ClickUi is a powerful, cross-platform open-source application that integrates va
 
 It's 100% Python, and aims to be the best AI-computer assistant. Help us build it to either get there or keep it that way! **Submit pull requests to main** and they will be reviewed.
 
-Looking for Collaborators! Submit pull requests to main to get started
+Looking for Collaborators!
 
 ---
 
