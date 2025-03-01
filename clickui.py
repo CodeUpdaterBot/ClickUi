@@ -51,8 +51,6 @@ from PySide6.QtWidgets import (
 use_sonos = False
 SONOS_IP = "192.168.1.27"
 use_conversation_history = True
-current_conversation_id = None
-current_conversation_file_path = None
 days_back_to_load = 15
 
 BROWSER_TYPE = "chromium"
@@ -71,6 +69,12 @@ GOOGLE_API_KEY = ""
 OPENROUTER_API_KEY = ""
 CLAUDE_API_KEY = ""
 GROQ_API_KEY = ""
+HOTKEY_LAUNCH = "ctrl+k"
+# =========== .voiceconfig overwrites these above  ============
+
+launch_hotkey_id = None
+current_conversation_id = None
+current_conversation_file_path = None
 
 ENGINE_MODELS = {
     "Ollama": ["llama3-groq-tool-use:8b-q5_K_M", "qwen2.5:7b-instruct-q5_K_M"],
@@ -150,17 +154,8 @@ phonemizer_logger = logging.getLogger("phonemizer")
 phonemizer_logger.setLevel(logging.ERROR)
 phonemizer_logger.handlers.clear()
 phonemizer_logger.propagate = False
+
 kokoro_pipeline = None
-
-MODEL = "o3-mini"  # We'll unify with MODEL_ENGINE from the original code, but keep it for the UI label
-OPENROUTER_API_KEY = ""
-CLAUDE_API_KEY = ""
-GROQ_API_KEY = ""
-BROWSER_TO_USE = "Chrome"
-
-HOTKEY_LAUNCH = "ctrl+k"
-launch_hotkey_id = None
-
 last_main_geometry = None
 last_chat_geometry = None
 
@@ -188,13 +183,12 @@ def load_config():
         global use_sonos, use_conversation_history, BROWSER_TYPE, CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY
         global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP
-        global BROWSER_TO_USE, HOTKEY_LAUNCH
+        global HOTKEY_LAUNCH
         global OPENROUTER_API_KEY, CLAUDE_API_KEY, GROQ_API_KEY
 
         use_sonos = config.get("use_sonos", use_sonos)
         use_conversation_history = config.get("use_conversation_history", use_conversation_history)
         BROWSER_TYPE = config.get("BROWSER_TYPE", BROWSER_TYPE)
-        BROWSER_TO_USE = BROWSER_TYPE  # Mirror
         CHROME_USER_DATA = config.get("CHROME_USER_DATA", CHROME_USER_DATA)
         CHROME_DRIVER_PATH = config.get("CHROME_DRIVER_PATH", CHROME_DRIVER_PATH)
         CHROME_PROFILE = config.get("CHROME_PROFILE", CHROME_PROFILE)
@@ -287,7 +281,6 @@ def start_new_conversation():
     """
     global current_conversation_id, current_conversation_file_path
     if current_conversation_id is None:
-        # e.g. conversation_20231026_143210.csv
         timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
         current_conversation_id = timestamp_str
         conversation_dir = "history"
@@ -338,7 +331,7 @@ def ensure_system_prompt():
     conversation_messages = new_messages
 
 class FileDropLineEdit(QLineEdit):
-    file_attached = Signal(list)  # New signal to notify when a file is attached
+    file_attached = Signal(list)  # Signal to notify when a file is attached
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -435,7 +428,6 @@ class HistorySidebar(QFrame):
         self.setObjectName("HistorySidebar")
         self.setFixedWidth(0)  # Start with width 0 (hidden)
 
-        # CHANGED: Kept the style sheet consistent with the older version (copy 73) for hover effect, etc.
         self.setStyleSheet("""
             QFrame#HistorySidebar {
                 background-color: rgba(30, 30, 30, 0.85);
@@ -458,7 +450,6 @@ class HistorySidebar(QFrame):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
-        # Header with title only
         header_container = QWidget()
         header_layout = QHBoxLayout(header_container)
         header_layout.setContentsMargins(12, 12, 12, 12)
@@ -548,7 +539,6 @@ class HistorySidebar(QFrame):
             self.conversations_layout.addWidget(placeholder)
             return
 
-        # CHANGED: Group files by date, following the older "copy 73" approach
         files_by_date = {}
         for file_name in os.listdir(history_dir):
             if file_name.startswith("conversation_") and file_name.endswith(".csv"):
@@ -570,7 +560,7 @@ class HistorySidebar(QFrame):
             self.conversations_layout.addWidget(placeholder)
             return
 
-        # Sort dates descending
+        # Sort dates descending, newest at top
         sorted_dates = sorted(files_by_date.keys(), reverse=True)
 
         for date_str in sorted_dates:
@@ -588,7 +578,7 @@ class HistorySidebar(QFrame):
             # Sort files within the date (newest first)
             files_by_date[date_str].sort(key=lambda x: x[0], reverse=True)
 
-            # CHANGED: Build conversation previews in the older style
+            # Build conversation previews
             for file_time, file_path in files_by_date[date_str]:
                 preview_text = "Untitled Conversation"
                 messages = []
@@ -633,7 +623,6 @@ class HistorySidebar(QFrame):
                     self.conversations_layout.addWidget(label)
 
     def on_conversation_clicked(self, file_path):
-        """Handle clicking on a conversation in the sidebar and emit its messages."""
         messages = []
         try:
             with open(file_path, newline="", encoding="utf-8") as csvfile:
@@ -653,9 +642,6 @@ class HistorySidebar(QFrame):
         self.conversation_selected.emit(messages)
 
     def show_sidebar(self):
-        """
-        Animate sidebar to appear (unchanged from original).
-        """
         self.animation_group.stop()
         self.animation.setStartValue(self.width())
         self.animation.setEndValue(175)
@@ -666,9 +652,6 @@ class HistorySidebar(QFrame):
         self.animation_group.start()
 
     def hide_sidebar(self):
-        """
-        Animate sidebar to disappear (unchanged from original).
-        """
         self.animation_group.stop()
         self.animation.setStartValue(self.width())
         self.animation.setEndValue(0)
@@ -684,8 +667,8 @@ class VerticalIndicator(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("VerticalIndicator")
-        self.setFixedWidth(8)  # Keep the narrow width
-        self.setFixedHeight(200)  # Set a fixed height - this is the key change
+        self.setFixedWidth(8)  
+        self.setFixedHeight(200)
         self.setStyleSheet("""
             QFrame#VerticalIndicator {
                 background-color: #9e9e9e;
@@ -796,7 +779,7 @@ def normalize_convo_for_storage(messages):
     """
     Filters out any system prompts and converts any tool calls in the conversation history
     to the unified role 'function' for storage. This ensures that only user, assistant,
-    and function/tool messages are saved.
+    and function messages are saved (OpenAI vs Ollama vs Google have varying reqs).
     """
     normalized = []
     for msg in messages:
@@ -833,10 +816,6 @@ def kill_chromium_instances():
         print(f"Error killing Chromium instances: {e}")
 
 def deduce_function_name_from_content(content: str) -> str:
-    """
-    Attempt to guess the function name from stored function messages by checking
-    against a list of property-related keywords and Google search keywords.
-    """
     content_lower = content.lower()
     property_keywords = [
         "zillow", "redfin", "arv", "lookup the value", "home value", 
@@ -848,12 +827,10 @@ def deduce_function_name_from_content(content: str) -> str:
         "find on google", "what time is it", "what day is it", "weather", "whether"
     ]
     
-    # Check for property keywords first
     for keyword in property_keywords:
         if keyword in content_lower:
             return "property_lookup"
     
-    # Then check for Google search keywords
     for keyword in google_keywords:
         if keyword in content_lower:
             return "google_search"
@@ -864,7 +841,6 @@ def load_previous_history(days: int):
     """
     Loads conversation history from each conversation_{YYYYMMDD_HHMMSS}.csv file within 'days'.
     Then merges them all (in ascending time) into a single combined message list.
-    NOTE: If you want them as separate conversation sessions, you can store them differently.
     """
     history_dir = "history"
     loaded_messages = []
@@ -875,13 +851,12 @@ def load_previous_history(days: int):
 
     now = datetime.now()
     threshold = now - timedelta(days=days)
-    # We'll parse each file named like conversation_YYYYMMDD_HHMMSS.csv
+    # Parse each file named like conversation_YYYYMMDD_HHMMSS.csv
     session_files = []
     for fname in os.listdir(history_dir):
         if not fname.startswith("conversation_") or not fname.endswith(".csv"):
             continue
         # Extract the datetime from the filename
-        # e.g. conversation_20231025_141552.csv → "20231025_141552"
         base = fname[len("conversation_"):-4]
         try:
             file_dt = datetime.strptime(base, "%Y%m%d_%H%M%S")
@@ -917,7 +892,7 @@ def load_previous_history(days: int):
         encoding = tiktoken.encoding_for_model(model)
         return len(encoding.encode(text))
 
-    loaded_messages = clean_system_prompts(loaded_messages) #don't need for convo history
+    loaded_messages = clean_system_prompts(loaded_messages) #don't need/waste of tokens for old Sys Prompts in convo history, we load the fresh sys prompt when chat initiated
     total_tokens = sum(count_tokens(msg["content"], model="gpt-4") for msg in loaded_messages)
 
     print(f"{GREEN}Loaded {len(loaded_messages)} messages from {days} days back | {MAGENTA}{total_tokens:,} tokens{RESET}")
@@ -1246,7 +1221,7 @@ def read_file_content(file_path, max_chars=50000):
 
 def record_and_transcribe_once() -> str:
     """
-    Records user speech until ~0.9s of silence is detected, then transcribes with Whisper.
+    Records user speech until ~0.9s of silence is detected, then performs some validation before transcribing with Whisper.
     """
     global recording_flag, stop_chat_loop, whisper_model
     model = whisper_model
@@ -1256,9 +1231,9 @@ def record_and_transcribe_once() -> str:
     audio_q.queue.clear()
     samplerate = 24000
     blocksize = 1024
-    silence_threshold = 70
+    silence_threshold = 70      # 0 = every noice triggers transcription, 100 = very direct input to recognize transcription, depends on your mic, room, etc
     max_silence_seconds = 0.9
-    MIN_RECORD_DURATION = 1.0
+    MIN_RECORD_DURATION = 0.75
     recorded_frames = []
     speaking_detected = False
     silence_start_time = None
@@ -1324,7 +1299,7 @@ def record_and_transcribe_once() -> str:
         return ""
     stop_spinner()
     print(f"{GREEN}Recording ended. Transcribing...{RESET}")
-    #play_wav_file_blocking('recording_ended.wav') #not necessary, since dialing tone plays once sending out to API. U-comment to add confirmation sound playback of end of recording
+    #play_wav_file_blocking('recording_ended.wav') #not necessary, since dialing tone plays once sending out to API. Un-comment to add confirmation sound playback when audio recording finishes (kind of annoying)
     if not recorded_frames:
         audio_data = np.array([])
     else:
@@ -1368,7 +1343,7 @@ def strip_code_blocks(text: str) -> str:
 
 def start_spinner():
     """
-    Launch an ASCII spinner in the console during loading (could be better/on more often).
+    Launch an ASCII spinner in the console during loading.
     """
     global spinner_thread, spinner_stop_event
     spinner_stop_event.clear()
@@ -1428,7 +1403,6 @@ def normalize_convo_for_ollama(messages):
         if msg.get("role") == "function":
             msg["role"] = "tool"
 
-    # Normalize messages for Groq by removing extra keys
     normalized_messages = []
     for msg in messages:
         normalized_msg = {
@@ -1443,7 +1417,6 @@ def call_ollama(prompt: str, model_name: str) -> str:
 
     ensure_system_prompt()
     conversation_messages.append({"role": "user", "content": prompt})
-    # Now normalize only the messages that are actual function calls (if any)
     normalize_convo_for_ollama(conversation_messages)
     #print(conversation_messages) to ensure everything present (Sys Prompt, history, and current prompt)
     
@@ -1565,10 +1538,7 @@ def call_claude(prompt: str, model_name: str = "claude-3-7-sonnet-20241022") -> 
     if not CLAUDE_API_KEY:
         return "[Error: No Claude API key provided. Please set your Claude API key in settings.]"
     
-    # Ensure system prompt is present
     ensure_system_prompt()
-    
-    # Add the user's prompt to conversation history
     conversation_messages.append({"role": "user", "content": prompt})
     client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
     
@@ -1615,9 +1585,8 @@ def call_claude(prompt: str, model_name: str = "claude-3-7-sonnet-20241022") -> 
     ]
     
     try:
-        # Start spinner
         start_spinner()
-        
+
         # Make the API call
         max_tokens = 8000 if "haiku" in model_name.lower() else 64000
         response = client.messages.create(
@@ -1644,7 +1613,7 @@ def call_claude(prompt: str, model_name: str = "claude-3-7-sonnet-20241022") -> 
             tool_input = tool_use.input
             tool_id = tool_use.id
             
-            # Add the tool call to conversation history (for our internal tracking)
+            # Add the tool call to conversation history
             conversation_messages.append({
                 "role": "assistant",
                 "content": content_text,
@@ -1660,7 +1629,7 @@ def call_claude(prompt: str, model_name: str = "claude-3-7-sonnet-20241022") -> 
                 address = tool_input.get("address", "")
                 fetched_values = fetch_property_value(address)
                 
-                # Store tool response in conversation history (for our internal tracking)
+                # Store tool response in conversation history
                 conversation_messages.append({
                     "role": "tool",
                     "name": "property_lookup",
@@ -2260,7 +2229,7 @@ def call_google(prompt: str, model_name: str) -> str:
     else:
         conversation_messages.append({"role": "user", "content": prompt})
     
-    # Instantiate the Google search tool as required in the docs.
+    # Instantiate the Google search tool as Google requires.
     google_search_tool = Tool(
         google_search=GoogleSearch()
     )
@@ -2334,7 +2303,6 @@ def call_current_engine(prompt: str, fresh: bool = False) -> str:
     
     response = ""
     if ENGINE == "Ollama":
-        # Use the configured MODEL_ENGINE instead of the default MODEL.
         response = call_ollama(prompt, MODEL_ENGINE)
     elif ENGINE == "OpenAI":
         reasoning_effort = 'low'
@@ -2415,14 +2383,14 @@ def chat_loop():
         else:
             play_audio(tts_audio, sample_rate=24000)
 
-# =============== PYSIDE6 GUI FROM combo2.py, MERGED ===============
+# =============== PYSIDE6 GUI ===============
 
 class ChatWorker(QObject):
     finished = Signal()
-    transcription_ready = Signal(str) 
-    ai_response_ready = Signal(str)    # New signal for AI responses
-    new_interaction_signal = Signal()  # Signal to clear chat before each new interaction
-    audio_playback_started = Signal()  
+    transcription_ready = Signal(str)
+    ai_response_ready = Signal(str)
+    new_interaction_signal = Signal()
+    audio_playback_started = Signal()
     audio_playback_ended = Signal()
 
     def __init__(self, parent=None):
@@ -2445,18 +2413,16 @@ class ChatWorker(QObject):
 
                 append_message_to_history("user", user_text, MODEL_ENGINE)
 
-                # Only now that we have a valid transcdription, clear the previous chat
+                # Only now that we have a valid transdription, clear the previous chat
                 self.new_interaction_signal.emit()
-                
                 # Emit the transcribed text to update the UI
                 self.transcription_ready.emit(user_text)
                 
-
                 start_loading_sound()
                 spin_timer = threading.Timer(0.5, start_spinner)
                 spin_timer.start()
 
-                # Model selection
+                # Model selection & call
                 response_text = call_current_engine(user_text, fresh=False)
 
                 spin_timer.cancel()
@@ -2697,10 +2663,10 @@ class ChatDialog(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         
-        # Create sidebar container
+        # Sidebar container
         sidebar_container = QWidget()
         sidebar_container.setObjectName("SidebarContainer")
-        # Add this style to make the container fully transparent
+        # Make the container fully transparent
         sidebar_container.setStyleSheet("""
             QWidget#SidebarContainer {
                 background-color: transparent;
@@ -2870,7 +2836,6 @@ class ChatDialog(QWidget):
             self.history_sidebar.show_sidebar()
 
     def toggle_sidebar(self, event=None):
-        """Toggle sidebar visibility"""
         self.sidebar_visible = not self.sidebar_visible
         if self.sidebar_visible:
             self.history_sidebar.show_sidebar()
@@ -2882,7 +2847,6 @@ class ChatDialog(QWidget):
         """Handle clicking on a conversation in the sidebar"""
         global conversation_messages
         
-        # Clear the chat area
         self.clear_chat()
         
         # Reset conversation messages, ensuring system prompt is present
@@ -2930,7 +2894,7 @@ class ChatDialog(QWidget):
 
     def scroll_to_bottom(self):
         # Delay scrolling a bit so that the layout updates,
-        # then set the scrollbar 50px past its maximum.
+        # then set the scrollbar 50px past its maximum (max didn't go all the way down).
         QTimer.singleShot(50, lambda: self.scroll.verticalScrollBar().setValue(
             self.scroll.verticalScrollBar().maximum() + 50
         ))
@@ -2948,7 +2912,6 @@ class ChatDialog(QWidget):
         if not self.host_window:
             return
 
-        # Get the current geometry of both the host window and the chat dialog.
         host_geom = self.host_window.geometry()
         dialog_geom = self.geometry()
 
@@ -3091,7 +3054,7 @@ class SettingsWidget(QWidget):
             }
         """)
 
-        # --- Status Indicators ---
+        # Status Indicators
         status_widget = QWidget(self)
         status_layout = QHBoxLayout(status_widget)
         status_layout.setContentsMargins(8, 8, 8, 8)
@@ -3142,11 +3105,11 @@ class SettingsWidget(QWidget):
                 background-color: #005C8E;
             }
         """)
-        self.donate_button.setToolTip("Donate via PayPal")
+        self.donate_button.setToolTip("Donate via PayPal/Zelle")
         
         # --- Please keep this part as-is --- https://github.com/CodeUpdaterBot/ClickUi
         def open_paypal_donate():
-            webbrowser.open("https://paypal.me/clickui") #Please, it took a while to build this all out. Would love more referrals for use!
+            webbrowser.open("https://paypal.me/clickui") # Please, it took a while to build this all out. Would love more referrals for use!
         self.donate_button.clicked.connect(open_paypal_donate)
         # --- Please keep this part as-is --- https://github.com/CodeUpdaterBot/ClickUi
 
@@ -3225,7 +3188,7 @@ class SettingsWidget(QWidget):
         # Attach our custom delegate:
         self.engine_combo.setItemDelegate(EngineItemDelegate(self.engine_combo))
 
-        # Add items for engines (useful if more unsupported models added)
+        # Add items for engines (useful if more unsupported models added since not all will support the tools/function calling we have
         engines_with_icons = {
             "Ollama": [
                 ("google_icon.png", "Google search enabled"),
@@ -3265,7 +3228,7 @@ class SettingsWidget(QWidget):
             # Store the icon filepaths in the UserRole
             self.engine_combo.setItemData(idx, paths, role=Qt.UserRole)
         
-        # Optionally set the current engine
+        # Set the current engine
         idx = self.engine_combo.findText(ENGINE, Qt.MatchFixedString)
         if idx >= 0:
             self.engine_combo.setCurrentIndex(idx)
@@ -3427,7 +3390,7 @@ class SettingsWidget(QWidget):
             self.cuda_indicator.setStyleSheet(f"background-color: {cuda_color}; border-radius: 6px;")
             self.cuda_indicator.setToolTip("CUDA is enabled." if cuda_ok else "CUDA is not available.")
 
-            # Check required libraries
+            # Check required libraries (can add more but these are basics)
             required_modules = [
                 "numpy",
                 "PySide6",
@@ -3436,7 +3399,16 @@ class SettingsWidget(QWidget):
                 "pyperclip",
                 "openai",
                 "whisper",
-                "playwright"
+                "playwright",
+                "pyautogui",
+                "sounddevice",
+                "soundfile",
+                "webrtcvad",
+                "keyboard",
+                "requests",
+                "tiktoken",
+                "ollama",
+                "google-genai"
             ]
             libraries_ok = True
             missing = []
@@ -3540,7 +3512,7 @@ class SettingsWidget(QWidget):
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY, BROWSER_TYPE
         global HOTKEY_LAUNCH, launch_hotkey_id
         global OPENROUTER_API_KEY, CLAUDE_API_KEY, GROQ_API_KEY
-        global SYSTEM_PROMPT  # Add this line
+        global SYSTEM_PROMPT
 
         SONOS_IP = self.sonos_ip_line.text().strip()
         use_sonos = self.use_sonos_cb.isChecked()
@@ -3586,7 +3558,7 @@ class SettingsWidget(QWidget):
 
         save_config()
 
-        # NEW: Reload conversation history if it's enabled in settings.
+        # Reload conversation history for every Save Config click, if it's enabled in settings.
         if use_conversation_history:
             conversation_messages = load_previous_history(days_back_to_load)
         else:
@@ -3755,7 +3727,6 @@ class BottomBubble(QFrame):
             self.start_recording()
             stop_chat_loop = False
 
-            # Optionally, load conversation history here
             if use_conversation_history:
                 previous_history = load_previous_history(days=days_back_to_load)
                 conversation_messages = previous_history if previous_history else []
@@ -3780,9 +3751,9 @@ class BottomBubble(QFrame):
             
             self.chat_thread.start()
         else:
-            # Stop the voice chat loop **immediately**:
+            # Stop the voice chat loop:
             if hasattr(self, 'chat_worker'):
-                self.chat_worker.stop()  # instruct the worker to stop quickly
+                self.chat_worker.stop()
 
             # Additional safeguard: stop any active timers (e.g., typewriter or floating dots).
             if hasattr(self, 'typewriter_timer') and self.typewriter_timer.isActive():
@@ -3841,7 +3812,7 @@ class BottomBubble(QFrame):
         self.is_audio_playing = True
         self.input_line.clear()
         self.input_line.setReadOnly(True)
-        self.floating_dots_timer.start(10)  # Update every 50ms for smooth animation
+        self.floating_dots_timer.start(10)  # Update every 10ms for smooth dots animation
         
     def stop_audio_animation(self):
         """Stop the floating dots animation and restore the input field"""
@@ -3859,8 +3830,6 @@ class BottomBubble(QFrame):
         # Calculate new positions for each dot based on sine wave
         time_factor = time.time() * 4  # Slowed down time factor for smoother animation
         dots_text = ""
-        
-        # Number of dots to display
         num_dots = 6
         
         for i in range(num_dots):
@@ -4019,7 +3988,7 @@ class BottomBubbleWindow(QWidget):
         
         self.chat_toggle_button.move(int(new_x), int(new_y))
 
-    # New helper method for the toggle button click.
+    # Helper method for the toggle button click
     def show_chat_dialog(self):
         if not self.chat_dialog.isVisible():
             self.chat_dialog.show()
@@ -4101,7 +4070,7 @@ class BottomBubbleWindow(QWidget):
             self.chat_dialog.show()
             self.chat_dialog.reposition()
 
-        # Don't clear previous chat messages if we're in voice mode
+        # Don't clear previous chat messages if we're in voice mode (keep one continuous conversation going for this voice mode convo)
         if not self.bottom_bubble.is_recording:
             self.chat_dialog.clear_chat()
 
@@ -4132,8 +4101,7 @@ class BottomBubbleWindow(QWidget):
     
     def handle_voice_ai_response(self, response_text):
         if not self.chat_dialog.isVisible():
-            # Keep the conversation in memory so it appears
-            # when the user re-toggles the window:
+            # Keep the conversation in memory so it appears when the user re-toggles the window:
             conversation_messages.append({"role": "assistant", "content": response_text})
             return
 
@@ -4249,14 +4217,14 @@ def exit_callback():
 def main():
     load_config()  # load from .voiceconfig
 
-    # On Windows, set DPI awareness before QApplication is instantiated. (for 2 warnings printed to CLI... program works fine without this fix...)---
+    # On Windows, set DPI awareness before QApplication is instantiated
+    # Added because of 2 warnings printed to CLI... program works fine without this, still getting DPI warnings anyhow...)
     if sys.platform.startswith('win'):
         try:
             import ctypes
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except Exception:
             pass
-
     app = QApplication(sys.argv)
 
     # --- Create HotkeyInvoker only after the QApplication exists ---
