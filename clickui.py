@@ -36,7 +36,7 @@ from PySide6.QtCore import (
     Qt, QTimer, QRect, QObject, QThread, QPropertyAnimation, QEasingCurve,
     QSequentialAnimationGroup, QParallelAnimationGroup, QSize, Signal, Slot, QMetaObject, QPoint, QEvent, QAbstractAnimation
 )
-from PySide6.QtGui import QAction, QFontMetrics, QPainter, QPixmap
+from PySide6.QtGui import QAction, QFontMetrics, QPainter, QPixmap, QIcon
 from PySide6.QtWidgets import (
     QApplication, QWidget, QFrame, QVBoxLayout, QHBoxLayout,
     QComboBox, QLineEdit, QToolButton, QPushButton, QScrollArea,
@@ -4215,6 +4215,7 @@ def exit_callback():
 def main():
     load_config()  # load from .voiceconfig
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon("favicon.ico"))
 
     # --- Create HotkeyInvoker only after the QApplication exists ---
     global hotkey_invoker
