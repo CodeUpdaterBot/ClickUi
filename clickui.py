@@ -12,11 +12,9 @@ import warnings
 import threading
 import numpy as np
 import pyperclip
-import pyautogui
 import sounddevice as sd
 import subprocess, platform
 import soundfile as sf
-import webrtcvad
 import keyboard
 import math
 import ollama
@@ -1153,10 +1151,10 @@ def play_audio(audio_data: np.ndarray, sample_rate: int = 24000):
     def playback():
         sd.play(audio_data, sample_rate)
         sd.wait()
-    playback_thread = threading.Thread(target=playback)
+    playback_thread = threading.Thread(target=playback, daemon=True)
     playback_thread.start()
     while playback_thread.is_alive():
-        time.sleep(0.1)
+        time.sleep(0.2)
 
 def play_wav_file_blocking(file_path: str):
     """
@@ -3396,19 +3394,17 @@ class SettingsWidget(QWidget):
                 "PySide6",
                 "selenium",
                 "bs4",
+                "whisper",
                 "pyperclip",
                 "openai",
-                "whisper",
                 "playwright",
-                "pyautogui",
                 "sounddevice",
                 "soundfile",
-                "webrtcvad",
                 "keyboard",
                 "requests",
                 "tiktoken",
                 "ollama",
-                "google-genai"
+                "google"
             ]
             libraries_ok = True
             missing = []
@@ -3416,7 +3412,8 @@ class SettingsWidget(QWidget):
             for mod in required_modules:
                 try:
                     importlib.import_module(mod)
-                except Exception:
+                except Exception as e:
+                    print(e)
                     libraries_ok = False
                     missing.append(mod)
 
@@ -4216,15 +4213,6 @@ def exit_callback():
 
 def main():
     load_config()  # load from .voiceconfig
-
-    # On Windows, set DPI awareness before QApplication is instantiated
-    # Added because of 2 warnings printed to CLI... program works fine without this, still getting DPI warnings anyhow...)
-    if sys.platform.startswith('win'):
-        try:
-            import ctypes
-            ctypes.windll.shcore.SetProcessDpiAwareness(1)
-        except Exception:
-            pass
     app = QApplication(sys.argv)
 
     # --- Create HotkeyInvoker only after the QApplication exists ---
