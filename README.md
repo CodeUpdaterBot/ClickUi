@@ -70,10 +70,11 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 ## Future Features 🚀 & Issues ⁉️
 - [ ] Add Code Formatting to AI replies, with small a copy icon
 - [ ] Add a Model/Engine functionality to settings via the SettingsWidget (perhaps 'Add New' in bottom of dropdown). Have to define in python right now to make available.
+- [ ] Fix/Revise Voice mode start/stop toggling & related resets. If you click to exit voice mode during transcription or audio playback, sometimes quits entire program. Also it should quit/exit right away, it takes a few seconds during audio playback. (Rarer issue but annoying if toggling Voice on/off all the time)
 - [ ] Add voice name selection (and model size) for kokoro in SettingsWidget
-- [ ] Fix/Revise Conversation History storage so that every message is stored as it comes in or goes out. Right now hotkey activates it sometimes, other logic decides when, not very clean.
 - [ ] Build tests for all functionality (Prompt input chat, Reply input chat, Conversation History validation, etc)
 - [ ] Add a model pricing table to calculate total price of input & output per message/websearch/file upload, etc. Could add option to display below message bubbles, etc.
+- [ ] Add multi-file attachment capability (limited to 1 now)
 - [ ] Track token usage per message. Could add option to display below message bubbles, etc.
 - [ ] Determine the best way to provide executables that work for Windows, Mac, and Linux that will not require the user to do anything other than install our app and run it on a fresh install of each OS (without the user installing Python, CUDA, etc). Something for normies.
 - [ ] Add fine-tuning settings to allow Temp, Top P, Repeat Penalty, etc. to be defined in Settings Widget (something clean/intuitive, maybe a gray horizontal bar like the one to expand the chat window, but above the UI, that lets you adjust these things quickly?) Also need to allow max_tokens per-model for Claude (or get error on API call), new models have thinking tokens/effort, etc. Should add support for all that in the same clean/intuitive SettingsWidget style we have now.
