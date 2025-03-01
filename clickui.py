@@ -4207,7 +4207,8 @@ def hotkey_callback():
     QMetaObject.invokeMethod(hotkey_invoker, "toggle", Qt.QueuedConnection)
 
 def exit_callback():
-    os._exit(0)
+    #os._exit(0) # Hard Kill
+    QApplication.quit() # Softer and no QObject errors
 
 # =============== MAIN ENTRY POINT ===============
 
