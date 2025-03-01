@@ -22,6 +22,7 @@ import math
 import ollama
 import requests
 import openai
+import tiktoken
 import webbrowser
 from datetime import datetime, timedelta
 from tempfile import mkdtemp
@@ -50,6 +51,8 @@ from PySide6.QtWidgets import (
 use_sonos = False
 SONOS_IP = "192.168.1.27"
 use_conversation_history = True
+current_conversation_id = None
+current_conversation_file_path = None
 days_back_to_load = 15
 
 BROWSER_TYPE = "chromium"
@@ -69,8 +72,6 @@ OPENROUTER_API_KEY = ""
 CLAUDE_API_KEY = ""
 GROQ_API_KEY = ""
 
-HOTKEY_LAUNCH = "ctrl+k"
-
 ENGINE_MODELS = {
     "Ollama": ["llama3-groq-tool-use:8b-q5_K_M", "qwen2.5:7b-instruct-q5_K_M"],
     "OpenAI": ["gpt-4o-mini", "o3-mini", "gpt-4o", "o1-mini", "o1-preview", "o1"],
@@ -79,7 +80,7 @@ ENGINE_MODELS = {
     "Groq": ["llama-3.3-70b-versatile", "deepseek-r1-distill-llama-70b", "deepseek-r1-distill-llama-70b-specdec", "mixtral-8x7b-32768", "qwen-2.5-coder-32b"],
     "OpenRouter": ["anthropic/claude-3-5-sonnet", "anthropic/claude-3-opus", "meta-llama/llama-3-70b-instruct", "meta-llama/llama-3.1-405b-instruct", "mistralai/mistral-large", "mistralai/mistral-large-2411", "mistralai/mistral-small-24b-instruct-2501", "google/gemini-1.5-pro", "deepseek-ai/deepseek-coder", "qwen/qwen-max"]
 }
-# MUST keep tool-calling references
+
 SYSTEM_PROMPT = """You are Angie—a sophisticated, witty, and versatile virtual assistant with a remarkably wide-ranging knowledge base. Your mission is to engage Steven in dynamic, thoughtful, and enjoyable conversations while always providing accurate, up-to-date, and contextually relevant information. Adhere strictly to these principles and guidelines:
 
 1. **Personality & Tone:**  
@@ -124,7 +125,6 @@ RESET = "\033[0m"
 
 # Flags and structures
 conversation_messages = []
-last_saved_index = 0
 
 spinner_stop_event = threading.Event()
 spinner_thread = None
@@ -150,9 +150,17 @@ phonemizer_logger = logging.getLogger("phonemizer")
 phonemizer_logger.setLevel(logging.ERROR)
 phonemizer_logger.handlers.clear()
 phonemizer_logger.propagate = False
-
 kokoro_pipeline = None
+
+MODEL = "o3-mini"  # We'll unify with MODEL_ENGINE from the original code, but keep it for the UI label
+OPENROUTER_API_KEY = ""
+CLAUDE_API_KEY = ""
+GROQ_API_KEY = ""
+BROWSER_TO_USE = "Chrome"
+
+HOTKEY_LAUNCH = "ctrl+k"
 launch_hotkey_id = None
+
 last_main_geometry = None
 last_chat_geometry = None
 
@@ -179,12 +187,14 @@ def load_config():
             config = json.load(f)
         global use_sonos, use_conversation_history, BROWSER_TYPE, CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY
-        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP, HOTKEY_LAUNCH
+        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP
+        global BROWSER_TO_USE, HOTKEY_LAUNCH
         global OPENROUTER_API_KEY, CLAUDE_API_KEY, GROQ_API_KEY
 
         use_sonos = config.get("use_sonos", use_sonos)
         use_conversation_history = config.get("use_conversation_history", use_conversation_history)
         BROWSER_TYPE = config.get("BROWSER_TYPE", BROWSER_TYPE)
+        BROWSER_TO_USE = BROWSER_TYPE  # Mirror
         CHROME_USER_DATA = config.get("CHROME_USER_DATA", CHROME_USER_DATA)
         CHROME_DRIVER_PATH = config.get("CHROME_DRIVER_PATH", CHROME_DRIVER_PATH)
         CHROME_PROFILE = config.get("CHROME_PROFILE", CHROME_PROFILE)
@@ -240,6 +250,65 @@ def save_config():
         print(f"{GREEN}Configuration saved to {config_file}{RESET}")
     except Exception as e:
         print(f"{RED}Error saving config: {e}{RESET}")
+
+def append_message_to_history(role: str, content: str, model_name: str = ""):
+    """
+    Appends a single message to a CSV-based conversation history file immediately.
+    role: 'user' or 'assistant' or 'function' etc.
+    content: the text of the message
+    model_name: which model is used (for 'assistant'), or empty for 'user'
+    """
+    global current_conversation_id, current_conversation_file_path
+    if not current_conversation_id or not current_conversation_file_path:
+        # Not currently in an active conversation
+        return
+
+    history_dir = "history"
+    if not os.path.exists(history_dir):
+        os.makedirs(history_dir)
+    
+    file_existed = os.path.exists(current_conversation_file_path)
+    with open(current_conversation_file_path, "a", newline="", encoding="utf-8") as csvfile:
+        fieldnames = ["timestamp", "role", "content", "model"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+        if not file_existed:
+            writer.writeheader()
+
+        writer.writerow({
+            "timestamp": datetime.now().strftime('%Y%m%d_%H%M%S'),
+            "role": role.lower(),
+            "content": content.strip(),
+            "model": model_name.strip() if model_name else ""
+        })
+
+def start_new_conversation():
+    """
+    Assign a new ID and file name for the next conversation.
+    """
+    global current_conversation_id, current_conversation_file_path
+    if current_conversation_id is None:
+        # e.g. conversation_20231026_143210.csv
+        timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+        current_conversation_id = timestamp_str
+        conversation_dir = "history"
+        if not os.path.exists(conversation_dir):
+            os.makedirs(conversation_dir)
+        current_conversation_file_path = os.path.join(
+            conversation_dir, f"conversation_{timestamp_str}.csv"
+        )
+        # If you want to track conversation opening/closing
+        #print(f"{GREEN}Started new conversation: {current_conversation_file_path}{RESET}")
+
+def end_current_conversation():
+    """
+    Stop tracking the current conversation. Next toggle-on event starts a new conversation.
+    """
+    global current_conversation_id, current_conversation_file_path
+    if current_conversation_id is not None:
+        #print(f"{GREEN}Ending conversation: {current_conversation_file_path}{RESET}")
+        pass
+    current_conversation_id = None
+    current_conversation_file_path = None
 
 def ensure_system_prompt():
     """
@@ -365,6 +434,8 @@ class HistorySidebar(QFrame):
         super().__init__(parent)
         self.setObjectName("HistorySidebar")
         self.setFixedWidth(0)  # Start with width 0 (hidden)
+
+        # CHANGED: Kept the style sheet consistent with the older version (copy 73) for hover effect, etc.
         self.setStyleSheet("""
             QFrame#HistorySidebar {
                 background-color: rgba(30, 30, 30, 0.85);
@@ -372,21 +443,21 @@ class HistorySidebar(QFrame):
                 border-top-left-radius: 24px;
                 border-bottom-left-radius: 24px;
             }
-            QLabel.ConversationItem {
+            QLabel#ConversationItem {
                 color: #FFFFFF;
                 font-size: 12px;
                 padding: 8px;
                 border-bottom: 1px solid #444444;
             }
-            QLabel.ConversationItem:hover {
-                background-color: rgba(60, 60, 60, 0.7);
+            QLabel#ConversationItem:hover {
+                background-color: #d3d3d3;
             }
         """)
-        
+
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        
+
         # Header with title only
         header_container = QWidget()
         header_layout = QHBoxLayout(header_container)
@@ -397,11 +468,10 @@ class HistorySidebar(QFrame):
         self.header.setStyleSheet("color: #FFFFFF; font-size: 14px; font-weight: bold;")
         header_layout.addWidget(self.header)
 
-        # Set background for header container
         header_container.setStyleSheet("background: transparent;")
         self.layout.addWidget(header_container)
-        
-        # Add a scroll area for conversations
+
+        # Scroll area for conversation items
         self.scroll = QScrollArea()
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setWidgetResizable(True)
@@ -427,61 +497,58 @@ class HistorySidebar(QFrame):
                 height: 0;
             }
         """)
-        
-        # Container for conversation items
         self.conversations_container = QWidget()
         self.conversations_container.setStyleSheet("background: transparent;")
         self.conversations_layout = QVBoxLayout(self.conversations_container)
         self.conversations_layout.setContentsMargins(0, 0, 0, 0)
         self.conversations_layout.setSpacing(0)
         self.conversations_layout.setAlignment(Qt.AlignTop)
-    
+
         self.scroll.setWidget(self.conversations_container)
         self.layout.addWidget(self.scroll)
-        
-        # Animation for sidebar width
+
+        # Width + opacity animations (unchanged)
         self.animation = QPropertyAnimation(self, b"minimumWidth")
         self.animation.setDuration(250)
         self.animation.setEasingCurve(QEasingCurve.OutCubic)
-        
-        # Also animate maximum width to ensure consistent behavior
+
         self.max_animation = QPropertyAnimation(self, b"maximumWidth")
         self.max_animation.setDuration(250)
         self.max_animation.setEasingCurve(QEasingCurve.OutCubic)
-        
-        # Add opacity animation for transparency effect
+
         self.opacity_effect = QGraphicsOpacityEffect(self)
-        self.opacity_effect.setOpacity(1.0)  # Start fully opaque
+        self.opacity_effect.setOpacity(1.0)
         self.setGraphicsEffect(self.opacity_effect)
-        
+
         self.opacity_animation = QPropertyAnimation(self.opacity_effect, b"opacity")
         self.opacity_animation.setDuration(250)
         self.opacity_animation.setEasingCurve(QEasingCurve.OutCubic)
-        
-        # Group animations
+
         self.animation_group = QParallelAnimationGroup()
         self.animation_group.addAnimation(self.animation)
         self.animation_group.addAnimation(self.max_animation)
         self.animation_group.addAnimation(self.opacity_animation)
-    
+
     def load_conversations(self):
-        """Load previous conversations and display them in the sidebar"""
-        # Clear current conversations
+        """
+        Load conversation sessions grouped by date (like older version),
+        show date headers, and generate a "User: ..." preview.
+        """
+        # Clear any existing items in the layout
         while self.conversations_layout.count():
             item = self.conversations_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
-        
-        # Load conversations from history files
+
         history_dir = "history"
         if not os.path.exists(history_dir):
-            # Add a placeholder message if no history exists
             placeholder = QLabel("No conversation history found")
             placeholder.setAlignment(Qt.AlignCenter)
             placeholder.setStyleSheet("color: #888888; padding: 20px;")
             self.conversations_layout.addWidget(placeholder)
             return
-        
+
+        # CHANGED: Group files by date, following the older "copy 73" approach
         files_by_date = {}
         for file_name in os.listdir(history_dir):
             if file_name.startswith("conversation_") and file_name.endswith(".csv"):
@@ -494,11 +561,20 @@ class HistorySidebar(QFrame):
                     files_by_date[date_str].append((file_time, os.path.join(history_dir, file_name)))
                 except Exception:
                     continue
-        
+
+        # If no valid conversation files, show a placeholder
+        if not files_by_date:
+            placeholder = QLabel("No conversation files found")
+            placeholder.setAlignment(Qt.AlignCenter)
+            placeholder.setStyleSheet("color: #888888; padding: 20px;")
+            self.conversations_layout.addWidget(placeholder)
+            return
+
+        # Sort dates descending
         sorted_dates = sorted(files_by_date.keys(), reverse=True)
-        
+
         for date_str in sorted_dates:
-            # Add date header
+            # Add date header label
             date_header = QLabel(date_str)
             date_header.setStyleSheet("""
                 color: #AAAAAA;
@@ -508,35 +584,38 @@ class HistorySidebar(QFrame):
                 background-color: rgba(50, 50, 50, 0.5);
             """)
             self.conversations_layout.addWidget(date_header)
-            
-            # Sort files within each date (newest first)
-            files_by_date[date_str].sort(reverse=True)
-            
+
+            # Sort files within the date (newest first)
+            files_by_date[date_str].sort(key=lambda x: x[0], reverse=True)
+
+            # CHANGED: Build conversation previews in the older style
             for file_time, file_path in files_by_date[date_str]:
-                # Load the first few messages to get a preview
                 preview_text = "Untitled Conversation"
                 messages = []
-                
+
                 try:
                     with open(file_path, newline="", encoding="utf-8") as csvfile:
                         reader = csv.DictReader(csvfile)
                         for i, row in enumerate(reader):
-                            if i >= 20:  # Only load first 20 messages for preview
+                            if i >= 20:  # only load first 20 lines for preview
                                 break
                             message = {
                                 "role": row.get("role", "").lower(),
-                                "content": row.get("content", "").strip()
+                                "content": row.get("content", "").strip(),
+                                "model": row.get("model", "").strip(),
                             }
                             messages.append(message)
-                            
-                            # Use first user message as preview
+
+                            # Use first user message as preview, prefixed "User: "
                             if message["role"] == "user" and i < 3 and not preview_text.startswith("User:"):
                                 content = message["content"]
-                                preview_text = f"User: {content[:40]}..." if len(content) > 40 else f"User: {content}"
+                                if len(content) > 40:
+                                    content = content[:40] + "..."
+                                preview_text = f"User: {content}"
                 except Exception as e:
-                    preview_text = f"Error loading conversation: {str(e)}"
-                
-                # Only add if we have messages
+                    preview_text = f"Error reading conversation: {str(e)}"
+
+                # If we have messages, create a label with the time + preview
                 if messages:
                     time_str = file_time.strftime("%H:%M")
                     label = QLabel(f"{time_str} - {preview_text}")
@@ -545,69 +624,60 @@ class HistorySidebar(QFrame):
                     label.setWordWrap(True)
                     label.setCursor(Qt.PointingHandCursor)
                     label.setToolTip("Click to load this conversation")
-                    
-                    # Store file path with the label
-                    label.setProperty("file_path", file_path)
-                    
-                    # Connect the label click event
-                    label.mousePressEvent = lambda event, path=file_path: self.on_conversation_clicked(path)
-                    
+
+                    # Mouse event to load conversation on click
+                    def on_label_click(event, path=file_path):
+                        self.on_conversation_clicked(path)
+                    label.mousePressEvent = on_label_click
+
                     self.conversations_layout.addWidget(label)
-    
+
     def on_conversation_clicked(self, file_path):
-        """Handle clicking on a conversation in the sidebar"""
-        # Load messages from the selected file
+        """Handle clicking on a conversation in the sidebar and emit its messages."""
         messages = []
         try:
             with open(file_path, newline="", encoding="utf-8") as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    message = {
+                dict_reader = csv.DictReader(csvfile)
+                for row in dict_reader:
+                    msg = {
                         "role": row.get("role", "").lower(),
-                        "content": row.get("content", "").strip()
+                        "content": row.get("content", "").strip(),
+                        "model": row.get("model", "").strip()
                     }
-                    messages.append(message)
+                    messages.append(msg)
         except Exception as e:
             print(f"Error loading conversation: {e}")
             return
-        
+
         # Emit signal with loaded messages
         self.conversation_selected.emit(messages)
-    
+
     def show_sidebar(self):
-        """Animate the sidebar to show"""
+        """
+        Animate sidebar to appear (unchanged from original).
+        """
         self.animation_group.stop()
-        
-        # Width animation
         self.animation.setStartValue(self.width())
-        self.animation.setEndValue(175)  # Max width of sidebar
+        self.animation.setEndValue(175)
         self.max_animation.setStartValue(self.width())
         self.max_animation.setEndValue(175)
-        
-        # Opacity animation - fade in
         self.opacity_animation.setStartValue(self.opacity_effect.opacity())
-        self.opacity_animation.setEndValue(1.0)  # Fully opaque
-        
+        self.opacity_animation.setEndValue(1.0)
         self.animation_group.start()
-    
+
     def hide_sidebar(self):
-        """Animate the sidebar to hide with transparency effect"""
+        """
+        Animate sidebar to disappear (unchanged from original).
+        """
         self.animation_group.stop()
-        
-        # Width animation
         self.animation.setStartValue(self.width())
         self.animation.setEndValue(0)
         self.max_animation.setStartValue(self.width())
         self.max_animation.setEndValue(0)
-        
-        # Opacity animation - fade out
-        # Configure opacity to reach 0.1 (90% transparent) when width animation is 75% complete
+
         self.opacity_animation.setStartValue(self.opacity_effect.opacity())
-        self.opacity_animation.setEndValue(0.0)  # Fully transparent
-        
-        # Make opacity animation faster than width animation to achieve the desired effect
+        self.opacity_animation.setEndValue(0.0)
         self.opacity_animation.setDuration(int(self.animation.duration() * 0.75))
-        
         self.animation_group.start()
 
 class VerticalIndicator(QFrame):
@@ -762,37 +832,6 @@ def kill_chromium_instances():
     except Exception as e:
         print(f"Error killing Chromium instances: {e}")
 
-def save_conversation_history():
-    """
-    Saves only new conversation messages that have not been previously saved,
-    in CSV files in the `history` folder.
-    """
-    global conversation_messages, last_saved_index
-    
-    normalized_messages = normalize_convo_for_storage(conversation_messages)
-    new_messages = normalized_messages[last_saved_index:]
-    if not new_messages:
-        #print(f"{YELLOW}No new conversation messages to save.{RESET}")
-        return
-    history_dir = "history"
-    if not os.path.exists(history_dir):
-        os.makedirs(history_dir)
-    now_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-    file_name = f"conversation_{now_str}.csv"
-    file_path = os.path.join(history_dir, file_name)
-    with open(file_path, "w", newline="", encoding="utf-8") as csvfile:
-        fieldnames = ["timestamp", "role", "content"]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for msg in new_messages:
-            writer.writerow({
-                "timestamp": now_str,
-                "role": msg.get("role", ""),
-                "content": msg.get("content", "")
-            })
-    print(f"{GREEN}Conversation history saved to {file_path}{RESET}")
-    last_saved_index = len(conversation_messages)
-
 def deduce_function_name_from_content(content: str) -> str:
     """
     Attempt to guess the function name from stored function messages by checking
@@ -823,43 +862,65 @@ def deduce_function_name_from_content(content: str) -> str:
 
 def load_previous_history(days: int):
     """
-    Loads conversation history from the last {days} days from CSV in the 'history' folder.
+    Loads conversation history from each conversation_{YYYYMMDD_HHMMSS}.csv file within 'days'.
+    Then merges them all (in ascending time) into a single combined message list.
+    NOTE: If you want them as separate conversation sessions, you can store them differently.
     """
     history_dir = "history"
     loaded_messages = []
-    allowed_roles = {"system", "assistant", "user", "function", "tool", "developer"}
+    allowed_roles = {"system","assistant","user","function","tool","developer"}
+
     if not os.path.exists(history_dir):
         return loaded_messages
+
     now = datetime.now()
-    threshold_time = now - timedelta(days=days)
-    messages_by_file = []
-    for file_name in os.listdir(history_dir):
-        if file_name.startswith("conversation_") and file_name.endswith(".csv"):
-            ts_str = file_name[len("conversation_"):-len(".csv")]
-            try:
-                file_time = datetime.strptime(ts_str, "%Y%m%d_%H%M%S")
-            except Exception:
-                continue
-            if file_time >= threshold_time:
-                file_path = os.path.join(history_dir, file_name)
-                file_messages = []
-                with open(file_path, newline="", encoding="utf-8") as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    for row in reader:
-                        role = row.get("role", "").lower()
-                        if role not in allowed_roles:
-                            print(f"{YELLOW}Invalid role '{role}' found in history; defaulting to 'user'.{RESET}")
-                            role = "user"
-                        message = {"role": role, "content": row.get("content", "").strip()}
-                        if role == "function":
-                            message["name"] = deduce_function_name_from_content(message["content"])
-                        file_messages.append(message)
-                messages_by_file.append((file_time, file_messages))
-    messages_by_file.sort(key=lambda x: x[0])
-    for _, msgs in messages_by_file:
-        loaded_messages.extend(msgs)
-    loaded_messages = clean_system_prompts(loaded_messages)
-    print(f"{GREEN}Loaded {len(loaded_messages)} messages from previous history (last {days} days).{RESET}")
+    threshold = now - timedelta(days=days)
+    # We'll parse each file named like conversation_YYYYMMDD_HHMMSS.csv
+    session_files = []
+    for fname in os.listdir(history_dir):
+        if not fname.startswith("conversation_") or not fname.endswith(".csv"):
+            continue
+        # Extract the datetime from the filename
+        # e.g. conversation_20231025_141552.csv → "20231025_141552"
+        base = fname[len("conversation_"):-4]
+        try:
+            file_dt = datetime.strptime(base, "%Y%m%d_%H%M%S")
+            if file_dt >= threshold:
+                session_files.append(os.path.join(history_dir, fname))
+        except:
+            # If it fails, skip
+            continue
+    
+    # Sort by file_dt ascending
+    session_files.sort(key=lambda path: os.path.getmtime(path))
+
+    for path in session_files:
+        try:
+            with open(path, newline="", encoding="utf-8") as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    role = row.get("role","").lower()
+                    if role not in allowed_roles:
+                        role = "user"
+                    msg = {
+                        "role": role,
+                        "content": row.get("content","").strip(),
+                        "model": row.get("model","").strip()
+                    }
+                    if role in ["tool","function"]:
+                        msg["name"] = deduce_function_name_from_content(msg["content"])
+                    loaded_messages.append(msg)
+        except Exception as e:
+            print(f"{RED}Error loading {path}: {e}{RESET}")
+    
+    def count_tokens(text: str, model: str = "gpt-4") -> int:
+        encoding = tiktoken.encoding_for_model(model)
+        return len(encoding.encode(text))
+
+    loaded_messages = clean_system_prompts(loaded_messages) #don't need for convo history
+    total_tokens = sum(count_tokens(msg["content"], model="gpt-4") for msg in loaded_messages)
+
+    print(f"{GREEN}Loaded {len(loaded_messages)} messages from {days} days back | {MAGENTA}{total_tokens:,} tokens{RESET}")
     return loaded_messages
 
 # =============== HELPER / TOOL-CALLING LOGIC ===============
@@ -1261,6 +1322,7 @@ def record_and_transcribe_once() -> str:
     if stop_chat_loop:
         recording_flag = False
         return ""
+    stop_spinner()
     print(f"{GREEN}Recording ended. Transcribing...{RESET}")
     #play_wav_file_blocking('recording_ended.wav') #not necessary, since dialing tone plays once sending out to API. U-comment to add confirmation sound playback of end of recording
     if not recorded_frames:
@@ -1365,7 +1427,16 @@ def normalize_convo_for_ollama(messages):
     for msg in messages:
         if msg.get("role") == "function":
             msg["role"] = "tool"
-    return messages
+
+    # Normalize messages for Groq by removing extra keys
+    normalized_messages = []
+    for msg in messages:
+        normalized_msg = {
+            "role": msg.get("role"),
+            "content": msg.get("content"),
+        }
+        normalized_messages.append(normalized_msg)
+    return normalized_messages
 
 def call_ollama(prompt: str, model_name: str) -> str:
     global conversation_messages
@@ -1374,8 +1445,7 @@ def call_ollama(prompt: str, model_name: str) -> str:
     conversation_messages.append({"role": "user", "content": prompt})
     # Now normalize only the messages that are actual function calls (if any)
     normalize_convo_for_ollama(conversation_messages)
-
-    #print(conversation_messages)
+    #print(conversation_messages) to ensure everything present (Sys Prompt, history, and current prompt)
     
     original_prompt = prompt
     property_keywords = ["zillow", "redfin", "arv", "lookup the value", "home value", 'value of', 'property value', 'redvin', 'red fin', 'silo', 'zeelow', 'Zilo', 'redvine', 'redfind', 'red find']
@@ -1873,6 +1943,15 @@ def call_groq(prompt: str, model_name: str) -> str:
     
     ensure_system_prompt()
     conversation_messages.append({"role": "user", "content": prompt})
+
+    # Normalize messages for Groq by removing extra keys
+    normalized_messages = []
+    for msg in conversation_messages:
+        normalized_msg = {
+            "role": msg.get("role"),
+            "content": msg.get("content")
+        }
+        normalized_messages.append(normalized_msg)
     
     # Check for property lookup or Google search keywords
     property_keywords = [
@@ -1934,7 +2013,7 @@ def call_groq(prompt: str, model_name: str) -> str:
             # Make the API call with tools
             response = client.chat.completions.create(
                 model=model_name,
-                messages=conversation_messages,
+                messages=normalized_messages,
                 tools=tools,
                 tool_choice="auto",
                 temperature=0.6 if 'deepseek' in model_name.lower() else 0.7
@@ -1964,7 +2043,7 @@ def call_groq(prompt: str, model_name: str) -> str:
                 # Create a new messages array for the follow-up call
                 # This is key for max tool calling rate
                 # Instead we're creating a new conversation with the tool results embedded
-                followup_messages = conversation_messages.copy()
+                followup_messages = normalized_messages.copy()
                 
                 # Add a message that includes the tool results directly
                 followup_messages.append({
@@ -2001,7 +2080,7 @@ def call_groq(prompt: str, model_name: str) -> str:
             # No tools needed, make a regular call
             response = client.chat.completions.create(
                 model=model_name,
-                messages=conversation_messages,
+                messages=normalized_messages,
                 temperature=0.6 if 'deepseek' in model_name.lower() else 0.7
             )
             content = response.choices[0].message.content
@@ -2247,15 +2326,16 @@ def call_google(prompt: str, model_name: str) -> str:
     return content
 
 def call_current_engine(prompt: str, fresh: bool = False) -> str:
-    global ENGINE, MODEL_ENGINE, conversation_messages, last_saved_index
+    global ENGINE, MODEL_ENGINE, conversation_messages
 
     if fresh:
         # Clear the conversation history for a fresh conversation.
         conversation_messages = []
-        last_saved_index = 0
+    
+    response = ""
     if ENGINE == "Ollama":
         # Use the configured MODEL_ENGINE instead of the default MODEL.
-        return call_ollama(prompt, MODEL_ENGINE)
+        response = call_ollama(prompt, MODEL_ENGINE)
     elif ENGINE == "OpenAI":
         reasoning_effort = 'low'
         # Check using MODEL_ENGINE to decide on reasoning effort.
@@ -2269,32 +2349,23 @@ def call_current_engine(prompt: str, fresh: bool = False) -> str:
                 # Default to low reasoning effort if not specified
                 base_model_name = MODEL_ENGINE
                 reasoning_effort = "low"
-            return call_openai(prompt, base_model_name, reasoning_effort)
+            response = call_openai(prompt, base_model_name, reasoning_effort)
         else:
-            return call_openai(prompt, MODEL_ENGINE, reasoning_effort)
+            response = call_openai(prompt, MODEL_ENGINE, reasoning_effort)
     elif ENGINE == "Google":
-        return call_google(prompt, MODEL_ENGINE)
+        response = call_google(prompt, MODEL_ENGINE)
     elif ENGINE == "OpenRouter":
-        return call_openrouter(prompt, MODEL_ENGINE)
+        response = call_openrouter(prompt, MODEL_ENGINE)
     elif ENGINE == "Claude":
-        return call_claude(prompt, MODEL_ENGINE)
+        response = call_claude(prompt, MODEL_ENGINE)
     elif ENGINE == "Groq":
-        return call_groq(prompt, MODEL_ENGINE)
+        response = call_groq(prompt, MODEL_ENGINE)
     else:
-        return f"[Engine '{ENGINE}' not recognized]"
-
-def append_user_message(message: str):
-    """
-    Append the user message to conversation_messages if it is not a duplicate
-    of the last user message. This ensures that the very first prompt is tracked,
-    while avoiding duplicate entries if the same text is processed twice.
-    """
-    global conversation_messages
-    # If the list is nonempty and the last user message equals this one (ignoring whitespace), skip.
-    if conversation_messages and conversation_messages[-1].get("role") == "user" \
-       and conversation_messages[-1].get("content", "").strip() == message.strip():
-        return
-    conversation_messages.append({"role": "user", "content": message})
+        response = f"[Engine '{ENGINE}' not recognized]"
+    
+    # Log the assistant's response to conversation history
+    append_message_to_history("assistant", response, MODEL_ENGINE)
+    return response
 
 # =============== VOICE-TO-VOICE CHAT LOOP ===============
 
@@ -2307,14 +2378,13 @@ def chat_loop():
     This loop continues until stop_chat_loop is True.
     """
     global stop_chat_loop, conversation_messages
-    while not stop_chat_loop:
+    while not stop_chat_loop and not self._should_stop:
         user_text = record_and_transcribe_once()
-        if stop_chat_loop:
+        if stop_chat_loop or self._should_stop:
             break
         if not user_text or not re.search(r'[a-zA-Z0-9]', user_text):
             continue
 
-        append_user_message(user_text)
         start_loading_sound()
         spin_timer = threading.Timer(0.5, start_spinner)
         spin_timer.start()
@@ -2353,26 +2423,34 @@ class ChatWorker(QObject):
     ai_response_ready = Signal(str)    # New signal for AI responses
     new_interaction_signal = Signal()  # Signal to clear chat before each new interaction
     audio_playback_started = Signal()  
-    audio_playback_ended = Signal()    
+    audio_playback_ended = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._should_stop = False
+
+    def stop(self):
+        """Request the worker to stop processing immediately."""
+        self._should_stop = True
     
     def run(self):
-        global stop_chat_loop, conversation_messages
+        global stop_chat_loop, conversation_messages, MODEL_ENGINE
         try:
-            while not stop_chat_loop:
+            while not stop_chat_loop and not self._should_stop:
                 user_text = record_and_transcribe_once()
-                if stop_chat_loop:
+                if stop_chat_loop or self._should_stop:
                     break
                 if not user_text or not re.search(r'[a-zA-Z0-9]', user_text):
                     continue
 
-                # Only now that we have a valid transcription, clear the previous chat
+                append_message_to_history("user", user_text, MODEL_ENGINE)
+
+                # Only now that we have a valid transcdription, clear the previous chat
                 self.new_interaction_signal.emit()
                 
                 # Emit the transcribed text to update the UI
                 self.transcription_ready.emit(user_text)
                 
-                # Use the helper to track the first (and subsequent) user prompt reliably
-                append_user_message(user_text)
 
                 start_loading_sound()
                 spin_timer = threading.Timer(0.5, start_spinner)
@@ -2393,6 +2471,10 @@ class ChatWorker(QObject):
                 tts_audio = do_kokoro_tts(sanitized_text)
                 latest_audio_path = "latest_output.wav"
                 sf.write(latest_audio_path, tts_audio, 24000)
+
+                # Check if stop has been requested before playing audio.
+                if stop_chat_loop or self._should_stop:
+                    break
                 
                 # Signal that audio playback is starting
                 self.audio_playback_started.emit()
@@ -2414,6 +2496,7 @@ class ChatWorker(QObject):
                 
                 # Signal that audio playback has ended
                 self.audio_playback_ended.emit()
+                QThread.msleep(50)
                 
         except Exception as e:
             print(f"{RED}Error in chat worker: {e}{RESET}")
@@ -2498,7 +2581,7 @@ class ChatArea(QWidget):
         self.layout.setSpacing(2)
         self.layout.setContentsMargins(12, 12, 12, 12)
 
-    def add_message(self, text, role="user"):
+    def add_message(self, text, role="user", engine=None):
         bubble = ChatBubble(text, role=role, parent=self)
         available_width = (self.width() - 104) if self.width() > 104 else 400
         bubble.setMaximumWidth(available_width)
@@ -2515,7 +2598,7 @@ class ChatArea(QWidget):
         bubble.updateGeometry()
 
         if role == "assistant":
-            header_text = MODEL_ENGINE
+            header_text = engine if engine else MODEL_ENGINE
             header_alignment = Qt.AlignLeft
         else:
             header_text = "You"
@@ -2762,19 +2845,8 @@ class ChatDialog(QWidget):
         # Keep track of current conversation
         self.current_conversation_file = None
 
-        # Load the initial conversation history (but don't display it)
-        if use_conversation_history:
-            if not conversation_messages:
-                history_messages = load_previous_history(days_back_to_load)
-                if history_messages and history_messages[0]["role"] == "assistant" and \
-                "what's on your mind" in history_messages[0]["content"].lower():
-                    history_messages.pop(0)
-                global last_saved_index
-                conversation_messages = history_messages[:]
-                last_saved_index = len(conversation_messages)
-        else:
-            if not conversation_messages:
-                ensure_system_prompt()
+        if not conversation_messages:
+            ensure_system_prompt()
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -2807,6 +2879,7 @@ class ChatDialog(QWidget):
             self.history_sidebar.hide_sidebar()
     
     def load_selected_conversation(self, messages):
+        """Handle clicking on a conversation in the sidebar"""
         global conversation_messages
         
         # Clear the chat area
@@ -2819,11 +2892,13 @@ class ChatDialog(QWidget):
         for msg in messages:
             if msg["role"] == "system":
                 has_system = True
-            
             conversation_messages.append(msg)
             # Only display user and assistant messages in UI
             if msg["role"] in ["user", "assistant"]:
-                self.add_message(msg["content"], role=msg["role"])
+                if msg["role"] == "assistant":
+                    self.add_message(msg["content"], role=msg["role"], engine=msg.get("model", MODEL_ENGINE))
+                else:
+                    self.add_message(msg["content"], role=msg["role"])
         
         # Add system prompt if not present
         if not has_system:
@@ -2860,8 +2935,8 @@ class ChatDialog(QWidget):
             self.scroll.verticalScrollBar().maximum() + 50
         ))
 
-    def add_message(self, text, role="user"):
-        self.chat_area.add_message(text, role=role)
+    def add_message(self, text, role="user", engine=None):
+        self.chat_area.add_message(text, role=role, engine=engine)
         self.scroll_to_bottom()
 
     def add_loading_bubble(self):
@@ -2919,8 +2994,10 @@ class ChatDialog(QWidget):
         self.resize_animation.start()
 
     def handle_reply_send(self):
+        global MODEL_ENGINE
         text = self.reply_line.text().strip()
         if text:
+            append_message_to_history("user", text, MODEL_ENGINE)
             self.add_message(text, role="user")
             self.reply_line.clear()
             container, lb = self.add_loading_bubble()
@@ -3509,6 +3586,12 @@ class SettingsWidget(QWidget):
 
         save_config()
 
+        # NEW: Reload conversation history if it's enabled in settings.
+        if use_conversation_history:
+            conversation_messages = load_previous_history(days_back_to_load)
+        else:
+            conversation_messages = []
+
 class BottomBubble(QFrame):
     send_message = Signal(str)
 
@@ -3644,7 +3727,7 @@ class BottomBubble(QFrame):
             self.attachment_thumbnail.show()
 
     def handle_send(self):
-        global conversation_messages
+        global conversation_messages, MODEL_ENGINE
         text = self.input_line.text().strip()
         # If a file is attached, inject its contents into the prompt.
         if hasattr(self.input_line, 'attachments') and self.input_line.attachments:
@@ -3656,8 +3739,7 @@ class BottomBubble(QFrame):
             self.input_line.attachments = []
             self.attachment_thumbnail.hide()
         if text:
-            # Use the helper to ensure we record the prompt only once.
-            append_user_message(text)
+            append_message_to_history("user", text, MODEL_ENGINE)
             self.send_message.emit(text)
             self.input_line.clear()
 
@@ -3667,7 +3749,7 @@ class BottomBubble(QFrame):
         self.model_label.setText(elided)
 
     def toggle_recording(self):
-        global recording_flag, stop_chat_loop, conversation_messages, last_saved_index, days_back_to_load
+        global recording_flag, stop_chat_loop, conversation_messages, days_back_to_load
         if not self.is_recording:
             # Start the voice chat loop
             self.start_recording()
@@ -3677,12 +3759,8 @@ class BottomBubble(QFrame):
             if use_conversation_history:
                 previous_history = load_previous_history(days=days_back_to_load)
                 conversation_messages = previous_history if previous_history else []
-                # Set the last_saved_index to the number of messages already loaded.
-                # This ensures only new messages (after this point) are saved.
-                last_saved_index = len(conversation_messages)
             else:
                 conversation_messages = []
-                last_saved_index = 0
                 
             # IMPORTANT: Clear the chat dialog to start fresh
             self.parent().chat_dialog.clear_chat()
@@ -3702,18 +3780,25 @@ class BottomBubble(QFrame):
             
             self.chat_thread.start()
         else:
-            # Stop the voice chat loop
+            # Stop the voice chat loop **immediately**:
+            if hasattr(self, 'chat_worker'):
+                self.chat_worker.stop()  # instruct the worker to stop quickly
+
+            # Additional safeguard: stop any active timers (e.g., typewriter or floating dots).
+            if hasattr(self, 'typewriter_timer') and self.typewriter_timer.isActive():
+                self.typewriter_timer.stop()
+            if self.floating_dots_timer.isActive():
+                self.floating_dots_timer.stop()
+
+            # Now switch back to normal mode
             self.stop_recording()
+            stop_spinner()
             print(f"{YELLOW}Stopping chat loop...{RESET}")
             sd.stop()  # Immediately stop any ongoing audio playback
-
-            stop_spinner()
             stop_loading_sound()
             stop_chat_loop = True
             recording_flag = False
             
-            # Save conversation history but don't close the app
-            save_conversation_history()
             print(f"{GREEN}Chat loop ended.{RESET}")
             
             # Make sure we properly clean up any ongoing threads
@@ -3722,7 +3807,7 @@ class BottomBubble(QFrame):
                 self.chat_thread.quit()
                 # If it doesn't quit within 1 second, terminate it
                 if not self.chat_thread.wait(1000):
-                    print(f"{YELLOW}Forcing chat thread termination...{RESET}")
+                    #print(f"{YELLOW}Forcing chat thread termination...{RESET}")
                     self.chat_thread.terminate()
                     self.chat_thread.wait()
     
@@ -3942,11 +4027,14 @@ class BottomBubbleWindow(QWidget):
             self.update_chat_toggle_button()
 
     def close_all(self):
-        # Stop any ongoing voice recording animation
-        if self.bottom_bubble.is_recording:
+        # Only end the current conversation if NOT in voice mode (voice mode stays on while UI hidden/closed)
+        if not self.bottom_bubble.is_recording:
             self.bottom_bubble.stop_recording()
-        self.chat_dialog.close()
-        self.close()
+            end_current_conversation()
+            self.chat_dialog.hide()
+            self.close()
+        else:
+            self.chat_dialog.hide()
 
     def resizeEvent(self, event):
         global last_main_geometry, last_chat_geometry
@@ -4056,12 +4144,14 @@ class BottomBubbleWindow(QWidget):
         try:
             ai_reply = call_current_engine(text, fresh=fresh)
         except Exception as e:
+            stop_spinner()
             print(f"Error in AI thread: {e}")
             ai_reply = f"[Error: {e}]"
         self.response_ready.emit(ai_reply, container, lb)
 
     @Slot(str, object, object)
     def update_ai_reply(self, ai_reply, container, lb):
+        global MODEL_ENGINE
         """
         Stops the loading bubble and appends the AI assistant response in the chat output.
         This slot is executed on the main thread.
@@ -4069,6 +4159,7 @@ class BottomBubbleWindow(QWidget):
         #print("DEBUG: update_ai_reply was called with:", ai_reply)
         if lb is not None:
             lb.stop_animation()
+            
         self.chat_dialog.chat_area.layout.removeWidget(container)
         container.deleteLater()
         self.chat_dialog.add_message(ai_reply, role="assistant")
@@ -4084,14 +4175,22 @@ class BottomBubbleWindow(QWidget):
 
 current_window = None
 def toggle_window():
-    global current_window, last_main_geometry, last_chat_geometry
+    global current_window, last_main_geometry, last_chat_geometry, conversation_messages
     try:
         if current_window is None:
             current_window = BottomBubbleWindow()
+            # Reload the conversation history every time the window is created.
+            if use_conversation_history:
+                conversation_messages = load_previous_history(days_back_to_load)
+            else:
+                conversation_messages = []
             if last_main_geometry is not None:
                 current_window.setGeometry(last_main_geometry)
             if last_chat_geometry is not None and current_window.chat_dialog.isVisible():
                 current_window.chat_dialog.setGeometry(last_chat_geometry)
+            # New conversation only if not already recording
+            if not current_window.bottom_bubble.is_recording:
+                start_new_conversation()
             current_window.show()
             current_window.raise_()
             current_window.activateWindow()
@@ -4103,10 +4202,19 @@ def toggle_window():
                 last_main_geometry = current_window.geometry()
                 if current_window.chat_dialog.isVisible():
                     last_chat_geometry = current_window.chat_dialog.geometry()
-                    current_window.chat_dialog.hide()  # hide the conversation output area
-                save_conversation_history()   # Save text-mode conversation messages now
+                    current_window.chat_dialog.hide()  # hide conversation output area
                 current_window.hide()
+                # Only end the conversation if we are NOT in voice mode.
+                if not current_window.bottom_bubble.is_recording:
+                    end_current_conversation()
             else:
+                # Reload conversation history every time the UI is re-opened via hotkey.
+                if use_conversation_history:
+                    conversation_messages = load_previous_history(days_back_to_load)
+                else:
+                    conversation_messages = []
+                if not current_window.bottom_bubble.is_recording:
+                    start_new_conversation()
                 current_window.show()
                 current_window.raise_()
                 current_window.activateWindow()
@@ -4119,6 +4227,12 @@ def toggle_window():
             current_window.setGeometry(last_main_geometry)
         if last_chat_geometry is not None and current_window.chat_dialog.isVisible():
             current_window.chat_dialog.setGeometry(last_chat_geometry)
+        if use_conversation_history:
+            conversation_messages = load_previous_history(days_back_to_load)
+        else:
+            conversation_messages = []
+        if not current_window.bottom_bubble.is_recording:
+            start_new_conversation()
         current_window.show()
         current_window.raise_()
         current_window.activateWindow()
@@ -4153,7 +4267,7 @@ def main():
     launch_hotkey_id = keyboard.add_hotkey(HOTKEY_LAUNCH, hotkey_callback, suppress=False)
     keyboard.add_hotkey("ctrl+d", exit_callback, suppress=True)
     app.setQuitOnLastWindowClosed(False)
-    print(f"{GREEN}Ready! Press {HOTKEY_LAUNCH} to show/hide the bottom bubble GUI.\nCtrl+D to exit.{RESET}")
+    print(f"{GREEN}Ready!\n{YELLOW}{HOTKEY_LAUNCH.title()} to show/hide the UI\n{RED}Ctrl+D to quit{RESET}")
     sys.exit(app.exec())
 
 if __name__ == "__main__":
