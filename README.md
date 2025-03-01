@@ -74,7 +74,6 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 - [ ] Fix/Revise Conversation History storage so that every message is stored as it comes in or goes out. Right now hotkey activates it sometimes, other logic decides when, not very clean.
 - [ ] Add a model pricing table to calculate total price of input & output per message/websearch/file upload, etc. Could add option to display below message bubbles, etc.
 - [ ] Track token usage per message. Could add option to display below message bubbles, etc.
-- [X] Update Conversation History model name preservation. When loading a previous chat, the model name above the chats is replaced with the currently selected model once a chat initiates.
 - [ ] Determine the best way to provide executables that work for Windows, Mac, and Linux that will not require the user to do anything other than install our app and run it on a fresh install of each OS (without the user installing Python, CUDA, etc). Something for normies.
 - [ ] Add fine-tuning settings to allow Temp, Top P, Repeat Penalty, etc. to be defined in Settings Widget (something clean/intuitive, maybe a gray horizontal bar like the one to expand the chat window, but above the UI, that lets you adjust these things quickly?) Also need to allow max_tokens per-model for Claude (or get error on API call), new models have thinking tokens/effort, etc. Should add support for all that in the same clean/intuitive SettingsWidget style we have now.
 - [ ] Merge to one main Window (right now 2 windows launch in taskbar, one for each area)
