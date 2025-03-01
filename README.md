@@ -70,7 +70,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 ## Future Features 🚀 & Issues ⁉️
 - [ ] Add Code Formatting to AI replies, with small a copy icon added to each code block output to easily copy the code.
 - [ ] Add a Model/Engine functionality to settings via the SettingsWidget (perhaps 'Add New' in bottom of dropdown). Have to define in python right now to make available.
-- [ ] Make UI Navigable with arrow keys (after launching with hotkey, cursor starts in Prompt area. From here, allow left arrow key to open settings, down arrow key to pop open conversation window below, etc.
+- [ ] Make UI Navigable with arrow keys (after launching with hotkey, cursor starts in Prompt area. From here, allow left arrow key to open settings, down arrow key to pop open conversation window below, etc.)
 - [ ] Fix/Revise Voice mode start/stop toggling & related resets. If you click to exit voice mode during transcription or audio playback, sometimes quits entire program
 - [ ] Add voice name selection (and model size) for kokoro in SettingsWidget
 - [ ] Build tests for all functionality (Prompt input chat, Reply input chat, Conversation History validation, etc)
