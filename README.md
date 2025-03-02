@@ -2,7 +2,7 @@
 <div align="center">
 The best AI-assistant tool, built for every computer in pure Python. <br>🏗️ The starting ground for the most widely used computer-based AI-assistant, something most people will have installed 🌎<br><br>
 
-![prompot](https://github.com/user-attachments/assets/b1feb373-ae54-4274-9fd0-2c1b2e30926d)<br>
+![prompt](https://github.com/user-attachments/assets/b1feb373-ae54-4274-9fd0-2c1b2e30926d)<br>
 
 ![badge](https://img.shields.io/badge/100%25-Python-blue) 
 ![badge](https://img.shields.io/badge/STT-Whisper-red)
