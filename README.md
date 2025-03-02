@@ -36,7 +36,7 @@ Submit new features & ideas in the README as checkboxes so they can be added to 
 
 ---
 
-1-min Demo: https://youtu.be/oH-A1hSdVKQ?si=nACWl7AiKbpoeUJn&t=1
+1-min Demo: https://youtu.be/oH-A1hSdVKQ
 
 ---
 
