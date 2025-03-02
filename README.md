@@ -184,7 +184,7 @@ python clickui.py
 
    - Once you see the message `Ready!...`, press `Ctrl+k` to bring up the ClickUi interface.
 
-<iframe style="width:100%;height:auto;min-width:600px;min-height:400px;" src="https://star-history.com/embed?secret=Z2hwX0Z5cjNzbnJRcUZmbkVMUHE4UmNnakhHWVpFVU1oRzJMZWVrZw==#CodeUpdaterBot/ClickUi&Date" frameBorder="0"></iframe>
+[![Star History Chart](https://api.star-history.com/svg?repos=CodeUpdaterBot/ClickUi&type=Date)](https://star-history.com/#CodeUpdaterBot/ClickUi&Date)
 
 ### Configuration
 
