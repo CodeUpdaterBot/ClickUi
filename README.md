@@ -20,7 +20,7 @@ The best AI-assistant tool, built for every computer in pure Python. <br>🏗️
 
 </div>
 
-# Documentation
+# What is it?
 
 ClickUi is a powerful, cross-platform open-source application that integrates various AI models, speech recognition, and web scraping capabilities. It provides a seamless interface for voice and text interactions, file attachments, property lookups, and web searches.
 
