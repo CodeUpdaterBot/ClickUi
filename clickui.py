@@ -3543,7 +3543,7 @@ class SettingsWidget(QWidget):
             if launch_hotkey_id is not None:
                 keyboard.remove_hotkey(launch_hotkey_id)
             HOTKEY_LAUNCH = new_hotkey
-            launch_hotkey_id = keyboard.add_hotkey(HOTKEY_LAUNCH, hotkey_callback, suppress=False)
+            launch_hotkey_id = keyboard.add_hotkey(HOTKEY_LAUNCH, hotkey_callback, suppress=True)
 
         global current_window
         if current_window is not None:
@@ -4222,7 +4222,7 @@ def main():
     hotkey_invoker = HotkeyInvoker()
 
     global launch_hotkey_id
-    launch_hotkey_id = keyboard.add_hotkey(HOTKEY_LAUNCH, hotkey_callback, suppress=False)
+    launch_hotkey_id = keyboard.add_hotkey(HOTKEY_LAUNCH, hotkey_callback, suppress=True)
     keyboard.add_hotkey("ctrl+d", exit_callback, suppress=True)
     app.setQuitOnLastWindowClosed(False)
     print(f"{GREEN}Ready!\n{YELLOW}{HOTKEY_LAUNCH.title()} to show/hide the UI\n{RED}Ctrl+D to quit{RESET}")
