@@ -73,6 +73,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 - [ ] Make UI Navigable with arrow keys (after launching with hotkey, cursor starts in Prompt area. From here, allow left arrow key to open settings, down arrow key to pop open conversation window below, etc.)
 - [ ] Fix/Revise Voice mode start/stop toggling & related resets. If you click to exit voice mode during transcription or audio playback, sometimes quits entire program
 - [ ] Add voice name selection (and model size) for kokoro in SettingsWidget
+- [ ] Add hotkey to take selectable area screenshot (or Prnt Scrn) and have it auto-appended to the input chat to easily show the AI what you are looking at/working with.
 - [ ] Build tests for all functionality (Prompt input chat, Reply input chat, Conversation History validation, etc)
 - [ ] Add a model pricing table to calculate total price of input & output per message/websearch/file upload, etc. Could add option to display below message bubbles, etc.
 - [ ] Add multi-file attachment capability (limited to 1 now)
