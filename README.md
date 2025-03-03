@@ -85,6 +85,8 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 - [ ] Add WebUI Browser-Use functionality & option to toggle in SettingsWidget: https://github.com/browser-use/web-ui (might need to create a mini version, WebUI is too slow for real-time usage). Have to scan input prompt/transcription for keywords or do tool call to trigger, options for headless to show/hide browser if desired, etc. Then respond once finished to confirm it was done, etc. (See below might want to create our own)
 - [ ] Computer interactions that you'd actually want to use. For example, 'Update the system prompt we have in ClickUi. Keep the tool calls and most functionality, but do XYZ...' and it would open ClickUi, navigate to settings, and paste in the new prompt and then say it's done. Or 'Take this prompt and run it through Google AI Studio with Model 1 and Model 2, Anthropic Console with Claude 3 dash 7, and OpenAI o1'. These things would be awesome and revolutionary! Totally possible if we all put our heads together. **The solution has to be versatile and not require much setup/tuning for the user**
 
+## Star History
+
 [![Star History Chart](https://api.star-history.com/svg?repos=CodeUpdaterBot/ClickUi&type=Date)](https://star-history.com/#CodeUpdaterBot/ClickUi&Date)
 ---
 
