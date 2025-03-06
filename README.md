@@ -147,7 +147,7 @@ python clickui.py
      ```
 
    - **C. Install Pytorch**  
-     Not required for chat-based functionality.  
+     Not required for chat-based functionality (takes a while!) 
      Install Pytorch from:  
      [https://pytorch.org/](https://pytorch.org/)
 
