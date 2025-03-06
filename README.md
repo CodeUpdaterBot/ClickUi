@@ -162,6 +162,7 @@ python clickui.py
 
      ```bash
      conda install -c conda-forge tensorflow=2.14.0=cuda118py311heb1bdc4_0
+     conda install -c conda-forge ffmpeg
      ```
 
 5. **Other Libraries**  
