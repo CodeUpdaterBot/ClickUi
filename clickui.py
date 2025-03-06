@@ -3503,7 +3503,7 @@ class SettingsWidget(QWidget):
             self.model_line.setText(ENGINE_MODELS["Ollama"][0])
 
     def on_save_clicked(self):
-        global use_sonos, SONOS_IP, use_conversation_history, days_back_to_load
+        global use_sonos, SONOS_IP, use_conversation_history, days_back_to_load, conversation_messages
         global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY
         global CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY, BROWSER_TYPE
