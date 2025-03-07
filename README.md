@@ -108,12 +108,10 @@ python clickui.py
 
 3. **Create new Conda environment**  
    - Run `conda -h` in your terminal to check if conda is installed correctly. You should see the help/command options after running this.
-   - Open Command Prompt/Terminal and create a new Conda environment called `click_ui` with Python version 3.11 & all other libraries in the conda_packages.txt. Then pip install the requirements.txt file:
+   - Open Command Prompt/Terminal and run:
 
    ```bash
    conda create --name click_ui --file conda_packages.txt
-   conda activate click_ui
-   pip install -r requirements.txt
    ```
 
    This creates a new Conda environment named `click_ui` where Python and required libraries will reside.
@@ -126,23 +124,18 @@ python clickui.py
 
    Your terminal prompt should now display the environment name.
 
-4. **Other Libraries**  
-   Test your installation by running:
+   - Now install all pip modules required:
 
    ```bash
-   python clickui.py
+   pip install -r requirements.txt
    ```
 
-   If you encounter import errors, install the missing libraries via pip. For example:
-
-   ```bash
-   pip install kokoro
-   pip install pyperclip
-   pip install keyboard
-   ```
-
-5. **Start the Program**  
-   - With your command prompt active in the correct conda environment and in the directory containing `clickui.py`, run:
+5. **Start the Program**
+   - Download/clone this repository, and cd to it (change directory). Your command prompt should look like this:
+     ```bash
+     (click_ui) C:\Users\PC\Downloads\ClickUi> 
+     ```
+   - Now that you are in the folder containing `clickui.py`, run:
 
    ```bash
    python clickui.py
