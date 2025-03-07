@@ -108,10 +108,12 @@ python clickui.py
 
 3. **Create new Conda environment**  
    - Run `conda -h` in your terminal to check if conda is installed correctly. You should see the help/command options after running this.
-   - Open Command Prompt/Terminal and create a new Conda environment called `click_ui` with Python version 3.11 & all other libraries in the requirements.txt file:
+   - Open Command Prompt/Terminal and create a new Conda environment called `click_ui` with Python version 3.11 & all other libraries in the conda_packages.txt. Then pip install the requirements.txt file:
 
    ```bash
-   conda create -n click_ui --file requirements.txt
+   conda create --name click_ui --file conda_packages.txt
+   conda activate click_ui
+   pip install -r requirements.txt
    ```
 
    This creates a new Conda environment named `click_ui` where Python and required libraries will reside.
