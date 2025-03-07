@@ -106,8 +106,15 @@ python clickui.py
    [https://www.anaconda.com/download/success](https://www.anaconda.com/download/success)  
    This allows for easier environment management and Python setup. Install system-wide and add to the PATH.
 
-3. **Create new Conda environment**  
+3. **Create new Conda environment**
+   - Download/clone this repository, and cd to it (change directory). Your command prompt should look like this:
+     
+     ```bash
+     C:\Users\PC\Downloads\ClickUi> 
+     ```
+   
    - Run `conda -h` in your terminal to check if conda is installed correctly. You should see the help/command options after running this.
+     
    - Open Command Prompt/Terminal and run:
 
    ```bash
@@ -131,7 +138,8 @@ python clickui.py
    ```
 
 5. **Start the Program**
-   - Download/clone this repository, and cd to it (change directory). Your command prompt should look like this:
+   - Your command prompt should look like this:
+     
      ```bash
      (click_ui) C:\Users\PC\Downloads\ClickUi> 
      ```
