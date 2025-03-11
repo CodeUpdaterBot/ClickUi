@@ -154,7 +154,9 @@ python clickui.py
 
 ### Configuration
 
-Configure clickui by editing the `.voiceconfig` file in the root directory. Key settings include:
+The `.voiceconfig` file in the root directory is where the important settings are stored. Make edits through the Settings menu in the GUI, or edit the `.voiceconfig` directly. Clicking Save Config in the Settings menu overwrites this file.
+
+ - Key settings include:
 
 ```json
 {
