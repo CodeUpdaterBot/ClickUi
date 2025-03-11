@@ -152,7 +152,6 @@ python clickui.py
    - Once you see the message `Ready!...`, press `Ctrl+k` to bring up the ClickUi interface.
 
 ### Configuration
----
 
 The `.voiceconfig` file in the root directory is where the important settings are stored. 
  - Make edits through the Settings menu in the GUI, or edit the `.voiceconfig` directly. Clicking the Save Config button in the Settings menu overwrites this file.
@@ -176,8 +175,7 @@ The `.voiceconfig` file in the root directory is where the important settings ar
 
 Adjust these settings according to your preferences and API keys.
 
-Conversation History
----
+### Conversation History
 When enabled, it loads your chats for the last x days from your local `history` folder, and injects them into the chat you have:
 
 ![conv_history](https://github.com/user-attachments/assets/72a271c7-8ee0-4f5d-be4f-1f6492cf64a8)
