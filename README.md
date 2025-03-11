@@ -152,6 +152,7 @@ python clickui.py
    - Once you see the message `Ready!...`, press `Ctrl+k` to bring up the ClickUi interface.
 
 ### Configuration
+---
 
 The `.voiceconfig` file in the root directory is where the important settings are stored. 
  - Make edits through the Settings menu in the GUI, or edit the `.voiceconfig` directly. Clicking the Save Config button in the Settings menu overwrites this file.
