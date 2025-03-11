@@ -175,11 +175,13 @@ The `.voiceconfig` file in the root directory is where the important settings ar
 
 Adjust these settings according to your preferences and API keys.
 
-Conversation History is configurable. When enabled, it loads your chats for the last x days from your local `history` folder, and injects them into the chat you have:
+Conversation History
+---
+When enabled, it loads your chats for the last x days from your local `history` folder, and injects them into the chat you have:
+
 ![conv_history](https://github.com/user-attachments/assets/72a271c7-8ee0-4f5d-be4f-1f6492cf64a8)
 
-⚠️ Conversation History **_can_** consume a lot of tokens quickly!
-- When enabled, the CLI will print the total tokens of your loaded conversation history
+  ⚠️ Conversation History **_can_** consume a lot of tokens quickly! The CLI will print the total tokens of your loaded conversation history when enabled/reloaded.
 
 ---
 
