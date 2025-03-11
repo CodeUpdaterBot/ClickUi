@@ -43,14 +43,17 @@ Submit new features & ideas in the README as checkboxes so they can be added to 
 The AI Assistant operates in two primary modes:
 ---
 
-- **Voice Mode:** Allows users to interact with the AI using voice commands and receive spoken responses.
+- **Voice Mode:** Allows users to interact with the AI using voice commands and receive spoken responses back.
 - ![voice_mode](https://github.com/user-attachments/assets/975c762a-c3ef-4ba7-949a-4fe9feacce64)
+  
+  - Your voice input is also copied to your clipboard for easy pasting
+  - ![copyfunc](https://github.com/user-attachments/assets/3f25e323-772a-486d-976f-b8fde2556dc2)
 
   
 - **Chat Mode:** Provides a text-based interface for typing queries and receiving written responses.
-- ![prompt2](https://github.com/user-attachments/assets/c337c9f4-6ded-4250-ae98-9e22c148cd8d)
+- ![google serch](https://github.com/user-attachments/assets/6716f673-c5d9-4338-8740-46e4588c0fa8)
 - ![prompt3](https://github.com/user-attachments/assets/76fe3a4d-4023-4e1a-af73-75be9dba357a)
-
+- ![zillow-redfin](https://github.com/user-attachments/assets/2a136637-1d75-4e45-b511-c8c23edd31ce)
 ---
 ### Key Dependencies
 ---
