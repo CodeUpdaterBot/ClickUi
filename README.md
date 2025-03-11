@@ -43,7 +43,7 @@ Submit new features & ideas in the README as checkboxes so they can be added to 
 The AI Assistant operates in two primary modes:
 ---
 
-- **Voice Mode:** Allows users to interact with the AI using voice commands and receive spoken responses back.
+- **Voice Mode:** Allows users to interact with the AI using voice commands and receive spoken responses on either your headphones/local audio or a SONOS speaker.
 - ![voice_mode](https://github.com/user-attachments/assets/975c762a-c3ef-4ba7-949a-4fe9feacce64)
   
 - **Chat Mode:** Provides a text-based interface for typing queries and receiving written responses.
