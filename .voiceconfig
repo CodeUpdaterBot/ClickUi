@@ -11,6 +11,7 @@
     "CHROMIUM_BINARY": "C:\\Users\\PC\\AppData\\Local\\Chromium\\Application\\chrome.exe",
     "ENGINE": "Groq",
     "MODEL_ENGINE": "llama-3.3-70b-versatile",
+    "OLLAMA_API_URL": "",
     "OPENAI_API_KEY": "",
     "GOOGLE_API_KEY": "",
     "OPENROUTER_API_KEY": "",
