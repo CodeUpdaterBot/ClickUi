@@ -62,6 +62,7 @@ CHROMIUM_BINARY = r"C:\Users\PC\AppData\Local\Chromium\Application\chrome.exe"
 
 ENGINE = "Google"
 MODEL_ENGINE = "gemini-2.0-flash"
+OLLAMA_API_URL = ""
 OPENAI_API_KEY = ""
 GOOGLE_API_KEY = ""
 OPENROUTER_API_KEY = ""
@@ -180,7 +181,7 @@ def load_config():
             config = json.load(f)
         global use_sonos, use_conversation_history, BROWSER_TYPE, CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY
-        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP
+        global ENGINE, MODEL_ENGINE, OLLAMA_API_URL, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP
         global HOTKEY_LAUNCH
         global OPENROUTER_API_KEY, CLAUDE_API_KEY, GROQ_API_KEY
 
@@ -196,6 +197,7 @@ def load_config():
         CHROMIUM_BINARY = config.get("CHROMIUM_BINARY", CHROMIUM_BINARY)
         ENGINE = config.get("ENGINE", ENGINE)
         MODEL_ENGINE = config.get("MODEL_ENGINE", MODEL_ENGINE)
+        OLLAMA_API_URL = config.get("OLLAMA_API_URL", OLLAMA_API_URL)
         OPENAI_API_KEY = config.get("OPENAI_API_KEY", OPENAI_API_KEY)
         GOOGLE_API_KEY = config.get("GOOGLE_API_KEY", GOOGLE_API_KEY)
         days_back_to_load = config.get("days_back_to_load", days_back_to_load)
@@ -228,6 +230,7 @@ def save_config():
             "CHROMIUM_BINARY": CHROMIUM_BINARY,
             "ENGINE": ENGINE,
             "MODEL_ENGINE": MODEL_ENGINE,
+            "OLLAMA_API_URL": OLLAMA_API_URL,
             "OPENAI_API_KEY": OPENAI_API_KEY,
             "GOOGLE_API_KEY": GOOGLE_API_KEY,
             "OPENROUTER_API_KEY": OPENROUTER_API_KEY,
@@ -1118,7 +1121,7 @@ try:
     def load_kokoro_model():
         global kokoro_pipeline
         if kokoro_pipeline is None:
-            device = "cuda"
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
             kokoro_pipeline = KPipeline(lang_code='a', device=device)
         return kokoro_pipeline
 
@@ -1411,8 +1414,15 @@ def normalize_convo_for_ollama(messages):
     return normalized_messages
 
 def call_ollama(prompt: str, model_name: str) -> str:
-    global conversation_messages
+    global conversation_messages, OLLAMA_API_URL
 
+    if OLLAMA_API_URL:
+        ollama_client = ollama.Client(
+            host = OLLAMA_API_URL
+        )
+    else:
+        ollama_client = ollama.Client()
+ 
     ensure_system_prompt()
     conversation_messages.append({"role": "user", "content": prompt})
     normalize_convo_for_ollama(conversation_messages)
@@ -1433,9 +1443,9 @@ def call_ollama(prompt: str, model_name: str) -> str:
         print(f"{GREEN}google_search tool activated!{RESET}")
         tools.append(google_search)
     if tools:
-        response = ollama.chat(model_name, messages=conversation_messages, tools=tools)
+        response = ollama_client.chat(model_name, messages=conversation_messages, tools=tools)
     else:
-        response = ollama.chat(model_name, messages=conversation_messages)
+        response = ollama_client.chat(model_name, messages=conversation_messages)
     stop_spinner()
     tool_calls = getattr(response.message, "tool_calls", None) or []
     if tool_calls:
@@ -3282,6 +3292,8 @@ class SettingsWidget(QWidget):
         api_group = QGroupBox("API Settings")
         api_layout = QFormLayout(api_group)
         api_layout.setLabelAlignment(Qt.AlignRight)
+        self.ollama_url_line = QLineEdit(OLLAMA_API_URL)
+        api_layout.addRow("Ollama API URL:", self.ollama_url_line)
         self.openai_key_line = QLineEdit(OPENAI_API_KEY)
         api_layout.addRow("OpenAI API Key:", self.openai_key_line)
         self.google_key_line = QLineEdit(GOOGLE_API_KEY)
@@ -3504,7 +3516,7 @@ class SettingsWidget(QWidget):
 
     def on_save_clicked(self):
         global use_sonos, SONOS_IP, use_conversation_history, days_back_to_load, conversation_messages
-        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY
+        global ENGINE, MODEL_ENGINE, OLLAMA_API_URL, OPENAI_API_KEY, GOOGLE_API_KEY
         global CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY, BROWSER_TYPE
         global HOTKEY_LAUNCH, launch_hotkey_id
@@ -3523,6 +3535,7 @@ class SettingsWidget(QWidget):
             MODEL_ENGINE = self.model_combo.currentText()
 
         SYSTEM_PROMPT = self.system_prompt_text.toPlainText().strip()
+        OLLAMA_API_URL = self.ollama_url_line.text().strip()
         OPENAI_API_KEY = self.openai_key_line.text().strip()
         GOOGLE_API_KEY = self.google_key_line.text().strip()
         OPENROUTER_API_KEY = self.openrouter_key_line.text().strip()
