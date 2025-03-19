@@ -88,7 +88,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=CodeUpdaterBot/ClickUi&type=Date)](https://star-history.com/#CodeUpdaterBot/ClickUi&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=CodeUpdaterBot/ClickUi&type=Date)](https://www.star-history.com/#CodeUpdaterBot/ClickUi&Date)
 ---
 
 ## Setup/Run
