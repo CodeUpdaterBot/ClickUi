@@ -67,7 +67,7 @@ The AI Assistant relies on two critical dependencies that must be installed and 
 
 ---
 ## Future Features 🚀 & Issues ⁉️
-- [ ] Replace keyboard with pyautogui to allow cross-platform support for keyboard & mouse interactions (keyboard has issues with Mac)
+- [ ] Replace keyboard with pynput to allow cross-platform support for keyboard & mouse interactions (current keyboard library has issues with Mac/Linux)
 - [ ] Add interrupt capability during Kokoro output to allow users to just speak to interrupt the current playback & trigger the recording mode loop again.
 - [ ] Add Code Formatting to AI replies, with small a copy icon added to each code block output to easily copy the code.
 - [ ] Add a Model/Engine functionality to settings via the SettingsWidget (perhaps 'Add New' in bottom of dropdown). Have to define in python right now to make available.
