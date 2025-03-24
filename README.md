@@ -199,6 +199,10 @@ whisper_model = openai_whisper.load_model("base", device='cuda')
 def record_and_transcribe_once() -> str:
     # ... recording logic ...
 
+    silence_threshold = 70      # 0 = every noice triggers transcription, 100 = very direct input to recognize transcription, depends on your mic, room, etc
+    max_silence_seconds = 0.9   # Silence recording loop duration
+    MIN_RECORD_DURATION = 0.75  # The minimum speech input duration to be considered a valid input (will skip just 'Hi' but will process 'Hi who is this?', etc
+
     def transcribe_audio(audio_data, samplerate):
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
             temp_wav_name = tmp.name
