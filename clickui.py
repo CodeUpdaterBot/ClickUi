@@ -15,7 +15,8 @@ import pyperclip
 import sounddevice as sd
 import subprocess, platform
 import soundfile as sf
-import keyboard
+from pynput import keyboard as pynput_keyboard  #replaced keyboard library
+from pynput.keyboard import GlobalHotKeys
 import math
 import ollama
 import requests
@@ -62,7 +63,6 @@ CHROMIUM_BINARY = r"C:\Users\PC\AppData\Local\Chromium\Application\chrome.exe"
 
 ENGINE = "Google"
 MODEL_ENGINE = "gemini-2.0-flash"
-OLLAMA_API_URL = ""
 OPENAI_API_KEY = ""
 GOOGLE_API_KEY = ""
 OPENROUTER_API_KEY = ""
@@ -72,6 +72,7 @@ HOTKEY_LAUNCH = "ctrl+k"
 # =========== .voiceconfig overwrites these above  ============
 
 launch_hotkey_id = None
+hotkey_listener = None
 current_conversation_id = None
 current_conversation_file_path = None
 
@@ -84,7 +85,7 @@ ENGINE_MODELS = {
     "OpenRouter": ["anthropic/claude-3-5-sonnet", "anthropic/claude-3-opus", "meta-llama/llama-3-70b-instruct", "meta-llama/llama-3.1-405b-instruct", "mistralai/mistral-large", "mistralai/mistral-large-2411", "mistralai/mistral-small-24b-instruct-2501", "google/gemini-1.5-pro", "deepseek-ai/deepseek-coder", "qwen/qwen-max"]
 }
 
-SYSTEM_PROMPT = """You are Angie—a sophisticated, witty, and versatile virtual assistant with a remarkably wide-ranging knowledge base. Your mission is to engage in dynamic, thoughtful, and enjoyable conversations while always providing accurate, up-to-date, and contextually relevant information. Adhere strictly to these principles and guidelines:
+SYSTEM_PROMPT = """You are Maya—a sophisticated, witty, and versatile virtual assistant with a remarkably wide-ranging knowledge base. Your mission is to engage in dynamic, thoughtful, and enjoyable conversations while always providing accurate, up-to-date, and contextually relevant information. Adhere strictly to these principles and guidelines:
 
 1. **Personality & Tone:**  
    - Be smart, charming, and clever. Infuse your responses with natural humor and just the right amount of sarcasm when it fits the context.  
@@ -92,7 +93,7 @@ SYSTEM_PROMPT = """You are Angie—a sophisticated, witty, and versatile virtual
 
 2. **Expertise & Accuracy:**  
    - Deliver well-researched, highly accurate and correct answers. If a query requires current or specialized information, utilize the available `google_search` tool to obtain the latest data and integrate these results seamlessly into your response.  
-   - When uncertainty arises, ask clarifying questions before proceeding to ensure your answer is as accurate and helpful as possible. You have access to the entire chat history so you can easily reference what they were talking about after clarifying. 
+   - When uncertainty arises, ask clarifying questions before proceeding to ensure your answer is as accurate and helpful as possible. You have access to the entire chat history so you can easily reference what they were talking about after clarifying. Take note of the timestamp of the loaded conversation history to detect which are the oldest (first) and newest (latest) messages.
 
 3. ****Tool Integration:****  
    - 1. You can search google! For queries needing factual verification, live or up-to-date data, or that mention searches, automatically invoke the `google_search` tool. Include a concise synthesis of the search results in your final answer to ensure clarity and comprehensiveness.
@@ -168,6 +169,35 @@ except:
 
 # =============== FUNCTIONALITY: CONFIG, HISTORY, ETC. ===============
 
+def format_hotkey(hotkey_str: str) -> str:
+    """
+    Converts a hotkey string such as 'ctrl+k' to the format expected by GlobalHotKeys,
+    for example, '<ctrl>+k'.
+    """
+    parts = hotkey_str.lower().split("+")
+    formatted_parts = []
+    for part in parts:
+        if part in ["ctrl", "shift", "alt"]:
+            formatted_parts.append(f"<{part}>")
+        else:
+            formatted_parts.append(part)
+    return "+".join(formatted_parts)
+
+def setup_hotkeys():
+    """
+    Initializes (or re-initializes) the hotkeys using pynput's GlobalHotKeys.
+    This function stops any existing listener and then creates a new one with the current settings.
+    """
+    global hotkey_listener
+    if hotkey_listener is not None:
+        hotkey_listener.stop()
+    hotkey_mapping = {
+        format_hotkey(HOTKEY_LAUNCH): hotkey_callback,
+        "<ctrl>+d": exit_callback  # Adjust to the correct format
+    }
+    hotkey_listener = GlobalHotKeys(hotkey_mapping)
+    hotkey_listener.start()
+
 def load_config():
     """
     Loads configuration from the .voiceconfig file (if it exists) and updates the global settings.
@@ -181,7 +211,7 @@ def load_config():
             config = json.load(f)
         global use_sonos, use_conversation_history, BROWSER_TYPE, CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY
-        global ENGINE, MODEL_ENGINE, OLLAMA_API_URL, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP
+        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY, days_back_to_load, SONOS_IP
         global HOTKEY_LAUNCH
         global OPENROUTER_API_KEY, CLAUDE_API_KEY, GROQ_API_KEY
 
@@ -197,7 +227,6 @@ def load_config():
         CHROMIUM_BINARY = config.get("CHROMIUM_BINARY", CHROMIUM_BINARY)
         ENGINE = config.get("ENGINE", ENGINE)
         MODEL_ENGINE = config.get("MODEL_ENGINE", MODEL_ENGINE)
-        OLLAMA_API_URL = config.get("OLLAMA_API_URL", OLLAMA_API_URL)
         OPENAI_API_KEY = config.get("OPENAI_API_KEY", OPENAI_API_KEY)
         GOOGLE_API_KEY = config.get("GOOGLE_API_KEY", GOOGLE_API_KEY)
         days_back_to_load = config.get("days_back_to_load", days_back_to_load)
@@ -230,7 +259,6 @@ def save_config():
             "CHROMIUM_BINARY": CHROMIUM_BINARY,
             "ENGINE": ENGINE,
             "MODEL_ENGINE": MODEL_ENGINE,
-            "OLLAMA_API_URL": OLLAMA_API_URL,
             "OPENAI_API_KEY": OPENAI_API_KEY,
             "GOOGLE_API_KEY": GOOGLE_API_KEY,
             "OPENROUTER_API_KEY": OPENROUTER_API_KEY,
@@ -1121,8 +1149,8 @@ try:
     def load_kokoro_model():
         global kokoro_pipeline
         if kokoro_pipeline is None:
-            device = 'cuda' if torch.cuda.is_available() else 'cpu'
-            kokoro_pipeline = KPipeline(lang_code='a', device=device)
+            device = "cuda"
+            kokoro_pipeline = KPipeline(lang_code='a', device=device, repo_id='hexgrad/Kokoro-82M')
         return kokoro_pipeline
 
     kokoro_pipeline = load_kokoro_model()  # load into memory
@@ -1150,6 +1178,7 @@ def do_kokoro_tts(text: str) -> np.ndarray:
         return np.array([], dtype=np.float32)
     return np.concatenate(total_audio)
 
+# NON-INTERRUPT AUDIO PLAYBACK
 def play_audio(audio_data: np.ndarray, sample_rate: int = 24000):
     def playback():
         sd.play(audio_data, sample_rate)
@@ -1414,15 +1443,8 @@ def normalize_convo_for_ollama(messages):
     return normalized_messages
 
 def call_ollama(prompt: str, model_name: str) -> str:
-    global conversation_messages, OLLAMA_API_URL
+    global conversation_messages
 
-    if OLLAMA_API_URL:
-        ollama_client = ollama.Client(
-            host = OLLAMA_API_URL
-        )
-    else:
-        ollama_client = ollama.Client()
- 
     ensure_system_prompt()
     conversation_messages.append({"role": "user", "content": prompt})
     normalize_convo_for_ollama(conversation_messages)
@@ -1443,9 +1465,9 @@ def call_ollama(prompt: str, model_name: str) -> str:
         print(f"{GREEN}google_search tool activated!{RESET}")
         tools.append(google_search)
     if tools:
-        response = ollama_client.chat(model_name, messages=conversation_messages, tools=tools)
+        response = ollama.chat(model_name, messages=conversation_messages, tools=tools)
     else:
-        response = ollama_client.chat(model_name, messages=conversation_messages)
+        response = ollama.chat(model_name, messages=conversation_messages)
     stop_spinner()
     tool_calls = getattr(response.message, "tool_calls", None) or []
     if tool_calls:
@@ -2344,52 +2366,53 @@ def call_current_engine(prompt: str, fresh: bool = False) -> str:
     return response
 
 # =============== VOICE-TO-VOICE CHAT LOOP ===============
-
-def chat_loop():
-    """
-    Repeatedly:
-      1) Record & transcribe user speech, indefinitely waiting for activation.
-      2) With captured audio > Whisper TTS, we call the selected model.
-      3) Convert the model's response to audio via Kokoro and play it.
-    This loop continues until stop_chat_loop is True.
-    """
-    global stop_chat_loop, conversation_messages
-    while not stop_chat_loop and not self._should_stop:
-        user_text = record_and_transcribe_once()
-        if stop_chat_loop or self._should_stop:
-            break
-        if not user_text or not re.search(r'[a-zA-Z0-9]', user_text):
-            continue
-
-        start_loading_sound()
-        spin_timer = threading.Timer(0.5, start_spinner)
-        spin_timer.start()
-
-        # Call the current engine with the user's text
-        response_text = call_current_engine(user_text, fresh=False)
-
-        spin_timer.cancel()
-        stop_spinner()
-        stop_loading_sound()
-        print(f"{CYAN}\nModel response: {response_text}\n{RESET}")
-        sanitized_text = strip_code_blocks(response_text)
-        tts_audio = do_kokoro_tts(sanitized_text)
-        latest_audio_path = "latest_output.wav"
-        sf.write(latest_audio_path, tts_audio, 24000)
-        if use_sonos:
-            # If you have a sonos.py that does send_to_sonos
-            try:
-                from sonos import send_to_sonos
-                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_wav:
-                    temp_wav_name = temp_wav.name
-                sf.write(temp_wav_name, tts_audio, 24000)
-                send_to_sonos(temp_wav_name, SONOS_IP)
-                os.remove(temp_wav_name)
-            except ImportError:
-                print(f"{RED}sonos.py not found or error. Using local playback instead.{RESET}")
-                play_audio(tts_audio, sample_rate=24000)
-        else:
-            play_audio(tts_audio, sample_rate=24000)
+# =============== deprecated barebones non-gui version ===============
+#
+#def chat_loop():
+#    """
+#    Repeatedly:
+#      1) Record & transcribe user speech, indefinitely waiting for activation.
+#      2) With captured audio > Whisper TTS, we call the selected model.
+#      3) Convert the model's response to audio via Kokoro and play it.
+#    This loop continues until stop_chat_loop is True.
+#    """
+#    global stop_chat_loop, conversation_messages
+#    while not stop_chat_loop and not self._should_stop:
+#        user_text = record_and_transcribe_once()
+#        if stop_chat_loop or self._should_stop:
+#            break
+#        if not user_text or not re.search(r'[a-zA-Z0-9]', user_text):
+#            continue
+#
+#        start_loading_sound()
+#        spin_timer = threading.Timer(0.5, start_spinner)
+#        spin_timer.start()
+#
+#        # Call the current engine with the user's text
+#        response_text = call_current_engine(user_text, fresh=False)
+#
+#        spin_timer.cancel()
+#        stop_spinner()
+#        stop_loading_sound()
+#        print(f"{CYAN}\nModel response: {response_text}\n{RESET}")
+#        sanitized_text = strip_code_blocks(response_text)
+#        tts_audio = do_kokoro_tts(sanitized_text)
+#        latest_audio_path = "latest_output.wav"
+#        sf.write(latest_audio_path, tts_audio, 24000)
+#        if use_sonos:
+#            # If you have a sonos.py that does send_to_sonos
+#            try:
+#                from sonos import send_to_sonos
+#                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_wav:
+#                    temp_wav_name = temp_wav.name
+#                sf.write(temp_wav_name, tts_audio, 24000)
+#                send_to_sonos(temp_wav_name, SONOS_IP)
+#                os.remove(temp_wav_name)
+#            except ImportError:
+#                print(f"{RED}sonos.py not found or error. Using local playback instead.{RESET}")
+#                play_audio(tts_audio, sample_rate=24000)
+#        else:
+#            play_audio(tts_audio, sample_rate=24000)
 
 # =============== PYSIDE6 GUI ===============
 
@@ -3292,8 +3315,6 @@ class SettingsWidget(QWidget):
         api_group = QGroupBox("API Settings")
         api_layout = QFormLayout(api_group)
         api_layout.setLabelAlignment(Qt.AlignRight)
-        self.ollama_url_line = QLineEdit(OLLAMA_API_URL)
-        api_layout.addRow("Ollama API URL:", self.ollama_url_line)
         self.openai_key_line = QLineEdit(OPENAI_API_KEY)
         api_layout.addRow("OpenAI API Key:", self.openai_key_line)
         self.google_key_line = QLineEdit(GOOGLE_API_KEY)
@@ -3412,7 +3433,7 @@ class SettingsWidget(QWidget):
                 "playwright",
                 "sounddevice",
                 "soundfile",
-                "keyboard",
+                "pynput",
                 "requests",
                 "tiktoken",
                 "ollama",
@@ -3516,10 +3537,10 @@ class SettingsWidget(QWidget):
 
     def on_save_clicked(self):
         global use_sonos, SONOS_IP, use_conversation_history, days_back_to_load, conversation_messages
-        global ENGINE, MODEL_ENGINE, OLLAMA_API_URL, OPENAI_API_KEY, GOOGLE_API_KEY
+        global ENGINE, MODEL_ENGINE, OPENAI_API_KEY, GOOGLE_API_KEY
         global CHROME_USER_DATA, CHROME_DRIVER_PATH, CHROME_PROFILE
         global CHROMIUM_USER_DATA, CHROMIUM_DRIVER_PATH, CHROMIUM_PROFILE, CHROMIUM_BINARY, BROWSER_TYPE
-        global HOTKEY_LAUNCH, launch_hotkey_id
+        global HOTKEY_LAUNCH, launch_hotkey_id, hotkey_listener
         global OPENROUTER_API_KEY, CLAUDE_API_KEY, GROQ_API_KEY
         global SYSTEM_PROMPT
 
@@ -3535,7 +3556,6 @@ class SettingsWidget(QWidget):
             MODEL_ENGINE = self.model_combo.currentText()
 
         SYSTEM_PROMPT = self.system_prompt_text.toPlainText().strip()
-        OLLAMA_API_URL = self.ollama_url_line.text().strip()
         OPENAI_API_KEY = self.openai_key_line.text().strip()
         GOOGLE_API_KEY = self.google_key_line.text().strip()
         OPENROUTER_API_KEY = self.openrouter_key_line.text().strip()
@@ -3553,10 +3573,8 @@ class SettingsWidget(QWidget):
 
         new_hotkey = self.launch_hotkey_line.text().strip()
         if new_hotkey and new_hotkey != HOTKEY_LAUNCH:
-            if launch_hotkey_id is not None:
-                keyboard.remove_hotkey(launch_hotkey_id)
             HOTKEY_LAUNCH = new_hotkey
-            launch_hotkey_id = keyboard.add_hotkey(HOTKEY_LAUNCH, hotkey_callback, suppress=True)
+            setup_hotkeys()
 
         global current_window
         if current_window is not None:
@@ -4231,12 +4249,10 @@ def main():
     app.setWindowIcon(QIcon("favicon.ico"))
 
     # --- Create HotkeyInvoker only after the QApplication exists ---
-    global hotkey_invoker
+    global hotkey_invoker, hotkey_listener
     hotkey_invoker = HotkeyInvoker()
+    setup_hotkeys()
 
-    global launch_hotkey_id
-    launch_hotkey_id = keyboard.add_hotkey(HOTKEY_LAUNCH, hotkey_callback, suppress=True)
-    keyboard.add_hotkey("ctrl+d", exit_callback, suppress=True)
     app.setQuitOnLastWindowClosed(False)
     print(f"{GREEN}Ready!\n{YELLOW}{HOTKEY_LAUNCH.title()} to show/hide the UI\n{RED}Ctrl+D to quit{RESET}")
     sys.exit(app.exec())
