@@ -36,7 +36,7 @@ jiter==0.8.2
 joblib==1.4.2
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
-keyboard==0.13.5
+pynput==1.8.1
 kokoro==0.8.4
 langcodes==3.5.0
 language-tags==1.2.0
