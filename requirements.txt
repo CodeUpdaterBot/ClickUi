@@ -36,7 +36,6 @@ jiter==0.8.2
 joblib==1.4.2
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
-pynput==1.8.1
 kokoro==0.8.4
 langcodes==3.5.0
 language-tags==1.2.0
@@ -71,6 +70,7 @@ pyee==12.1.1
 Pygments==2.19.1
 pyparsing==3.2.1
 pyperclip==1.9.0
+pynput==1.8.1
 PySide6==6.8.2.1
 PySide6_Addons==6.8.2.1
 PySide6_Essentials==6.8.2.1
