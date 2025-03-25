@@ -114,7 +114,12 @@ python clickui.py
 
 ### Manual Installation
 
-1. **Keep the files together in one folder**<br>
+1. **Install Anaconda/Conda** <br>
+   Download and install Anaconda/Conda from:  
+   [https://www.anaconda.com/download/success](https://www.anaconda.com/download/success)  
+   Needed to install the conda_packages.txt
+
+2. **Keep the files together in one folder**<br>
    You need the sonos.py, the .svg's, etc for the default program to run.<br>
    These are all provided in the GitHub folder, make sure your folder has the same contents as this Repo<br>
 
