@@ -97,17 +97,28 @@ python clickui.py
 ```
 ---
 
-### Installation
-0. **Keep the files together in one folder**<br>
+### Easy Installation (Windows Only)
+
+1. **Install Anaconda/Conda** <br>
+   Download and install Anaconda/Conda from:  
+   [https://www.anaconda.com/download/success](https://www.anaconda.com/download/success)  
+   This allows for easier environment management and Python setup. Install system-wide (for all users) and add to the PATH.
+
+2. **Run Install.bat**<br>
+   Available from ClickUi.app and in the GitHub repo
+   Running the Install.bat file will download this git repository, run the installation commands below for you, and start the program.
+
+   You can use the Install.bat file to launch the program, or `python clickui.py` in your command prompt.
+
+---
+
+### Manual Installation
+
+1. **Keep the files together in one folder**<br>
    You need the sonos.py, the .svg's, etc for the default program to run.<br>
    These are all provided in the GitHub folder, make sure your folder has the same contents as this Repo<br>
 
-2. **Install Anaconda/Conda**  
-   Download and install Anaconda/Conda from:  
-   [https://www.anaconda.com/download/success](https://www.anaconda.com/download/success)  
-   This allows for easier environment management and Python setup. Install system-wide and add to the PATH.
-
-3. **Create new Conda environment**
+2. **Create new Conda environment**
    - Download/clone this repository, and cd to it (change directory). Your command prompt should look like this:
      
      ```bash
@@ -138,7 +149,7 @@ python clickui.py
    pip install -r requirements.txt
    ```
 
-5. **Start the Program**
+3. **Start the Program**
    - Your command prompt should look like this:
      
      ```bash
