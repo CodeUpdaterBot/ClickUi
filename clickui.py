@@ -2103,7 +2103,7 @@ def call_openai(prompt: str, model_name: str, reasoning_effort: str) -> str:
     if not openai.api_key:
         stop_spinner()
         print(f"{RED}No OpenAI API key found.{RESET}")
-        print(f"{RED}Click Settings, set your API key, click Save Config and retry: {e}{RESET}")
+        print(f"{RED}Click Settings, set your API key(s), click Save Config, and retry{RESET}")
         return ""
 
     property_keywords = [
