@@ -1146,10 +1146,13 @@ class PropertyLookupTool:
 try:
     from kokoro import KPipeline
     kokoro_pipeline = None
+    
     def load_kokoro_model():
         global kokoro_pipeline
         if kokoro_pipeline is None:
-            device = "cuda"
+            # Safely use GPU if available, else fallback to CPU
+            import torch
+            device = "cuda" if torch.cuda.is_available() else "cpu"
             kokoro_pipeline = KPipeline(lang_code='a', device=device, repo_id='hexgrad/Kokoro-82M')
         return kokoro_pipeline
 
