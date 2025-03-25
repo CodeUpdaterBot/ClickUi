@@ -101,12 +101,12 @@ python clickui.py
 
 1. **Install Anaconda/Conda** <br>
    Download and install Anaconda/Conda from:  
-   [https://www.anaconda.com/download/success](https://www.anaconda.com/download/success)  
-   This allows for easier environment management and Python setup. Install system-wide (for all users) and add to the PATH.
+   [https://www.anaconda.com/download/success](https://www.anaconda.com/download/success)<br>
+   This allows for easier environment management and Python setup. Install system-wide (for all users) and add to the PATH.<br>
 
 2. **Run Install.bat**<br>
-   Available from ClickUi.app and in the GitHub repo
-   Running the Install.bat file will download this git repository, run the installation commands below for you, and start the program.
+   Available from ClickUi.app and in the GitHub repo<br>
+   Running the Install.bat file will download this git repository, run the installation commands below for you, and start the program.<br><br>
 
    You can use the Install.bat file to launch the program, or `python clickui.py` in your command prompt.
 
