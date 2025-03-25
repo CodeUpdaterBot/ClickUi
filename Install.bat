@@ -73,7 +73,7 @@ if NOT "%1"=="--post-install" (
         conda --version >nul 2>&1
         IF ERRORLEVEL 1 (
             echo [ERROR] Conda is not found or not on PATH.
-            echo Please install Anaconda/Miniconda and re-run this script.
+            echo Please install Anaconda first (for all users, add to PATH) and re-run this script: https://www.anaconda.com/download/success.
             pause
             goto end
         ) ELSE (
