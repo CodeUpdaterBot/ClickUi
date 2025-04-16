@@ -1,0 +1,132 @@
+# requirements_mac.txt
+annotated-types==0.7.0
+anyio==4.8.0
+appdirs==1.4.4
+attrs==25.1.0
+babel==2.17.0
+beautifulsoup4==4.13.3
+blis==1.2.0; sys_platform != 'darwin'  # macOS needs separate install
+bs4==0.0.2
+cachetools==5.5.2
+catalogue==2.0.10
+cffi==1.17.1
+click==8.1.8
+cloudpathlib==0.21.0
+colorama==0.4.6
+confection==0.1.5
+csvw==3.5.1
+curated-tokenizers==0.0.9
+curated-transformers==0.1.1
+cymem==2.0.11
+distro==1.9.0
+dlinfo==2.0.0
+docopt==0.6.2
+espeakng-loader==0.2.4
+fsspec==2025.2.0
+google==3.0.0
+google-auth==2.38.0
+google-genai==1.4.0
+greenlet==3.1.1
+h11==0.14.0
+httpcore==1.0.7
+httpx==0.28.1
+huggingface-hub==0.29.2
+ifaddr==0.2.0
+isodate==0.7.2
+jiter==0.8.2
+joblib==1.4.2
+jsonschema==4.23.0
+jsonschema-specifications==2024.10.1
+kokoro==0.8.4
+langcodes==3.5.0
+language-tags==1.2.0
+language_data==1.3.0
+llvmlite==0.44.0; sys_platform != 'darwin'  # Needs special handling on macOS
+loguru==0.7.3
+lxml==5.3.1
+marisa-trie==1.2.1
+markdown-it-py==3.0.0
+mdurl==0.1.2
+misaki==0.8.4
+more-itertools==10.6.0
+murmurhash==1.0.12
+num2words==0.5.14
+numba==0.61.0; sys_platform != 'darwin'  # Use accelerated version below for macOS
+numpy==1.26.4
+ollama==0.4.7
+openai==1.65.4
+openai-whisper==20240930
+outcome==1.3.0.post0
+packaging==24.2
+phonemizer-fork==3.3.2
+playwright==1.50.0
+preshed==3.0.9
+pyasn1==0.6.1
+pyasn1_modules==0.4.1
+pycparser==2.22
+pydantic==2.10.6
+pydantic_core==2.27.2
+pyee==12.1.1
+Pygments==2.19.1
+pyparsing==3.2.1
+pyperclip==1.9.0
+pynput==1.8.1; sys_platform == 'darwin'
+PySide6==6.8.2.1
+PySide6_Addons==6.8.2.1
+PySide6_Essentials==6.8.2.1
+python-dateutil==2.9.0.post0
+rdflib==7.1.3
+referencing==0.36.2
+regex==2024.11.6
+rfc3986==1.5.0
+rich==13.9.4
+rpds-py==0.23.1
+rsa==4.9
+safetensors==0.5.3
+scipy==1.15.2
+segments==2.3.0
+selenium==4.29.0
+shellingham==1.5.4
+shiboken6==6.8.2.1
+six==1.17.0
+smart-open==7.1.0
+sniffio==1.3.1
+soco==0.30.9
+sortedcontainers==2.4.0
+sounddevice==0.5.1; sys_platform == 'darwin'
+soundfile==0.13.1; sys_platform == 'darwin'
+soupsieve==2.6
+spacy==3.8.4
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+spacy-curated-transformers==0.3.0
+spacy-legacy==3.0.12
+spacy-loggers==1.0.5
+srsly==2.5.1
+sympy==1.13.1
+thinc==8.3.4
+tiktoken==0.9.0
+tokenizers==0.21.0
+torch==2.5.1; sys_platform != 'darwin'
+torchaudio==2.5.1; sys_platform != 'darwin'
+torchvision==0.20.1; sys_platform != 'darwin'
+tqdm==4.67.1
+transformers==4.49.0
+trio==0.29.0
+trio-websocket==0.12.2
+typer==0.15.2
+uritemplate==4.1.1
+wasabi==1.1.3
+weasel==0.4.1
+websocket-client==1.8.0
+websockets==14.2
+wrapt==1.17.2
+wsproto==1.2.0
+xmltodict==0.14.2
+
+# macOS-specific accelerators
+--extra-index-url https://download.pytorch.org/whl/nightly/cpu
+torch==2.5.1; sys_platform == 'darwin'
+torchaudio==2.5.1; sys_platform == 'darwin' 
+torchvision==0.20.1; sys_platform == 'darwin'
+llvmlite==0.44.0; sys_platform == 'darwin' and platform_machine == 'arm64'
+numba==0.61.0; sys_platform == 'darwin' and platform_machine == 'arm64'

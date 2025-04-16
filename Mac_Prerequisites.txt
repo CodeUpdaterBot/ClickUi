@@ -1,0 +1,5 @@
+# macOS Prerequisites
+brew install portaudio espeak-ng  # Required for sounddevice/phonemizer
+
+# Install with UV (handles platform-specific requirements automatically)
+uv pip install -r requirements_mac.txt
