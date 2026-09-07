@@ -18,3 +18,9 @@ history/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local AI-assistant instructions (never commit)
+AGENTS.md
+SOUL.md
+.hermes.md
+CLAUDE.md
