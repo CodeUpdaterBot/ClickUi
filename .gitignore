@@ -18,6 +18,3 @@ history/
 .idea/
 .DS_Store
 Thumbs.db
-
-# Local project documentation
-*.md
